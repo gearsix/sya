@@ -13,7 +13,7 @@
 [ ] user install
 	- installs ffmpeg/youtube-dl if not found ?
 	- just use corresponding python libaries
-[ ] detect timestamp anywhere in line (not just at start)
+[*] detect timestamp anywhere in line (not just at start)
 [x] detect tracks from missing timestamps
 	- Could be done using: _ffmpeg -i audio.mp3 -af silencedetect=d=0.5 -f null -_
 	but finding the right parameters for the silencedetect filter (see _man ffmpeg-filters)

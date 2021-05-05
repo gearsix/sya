@@ -5,7 +5,7 @@ import subprocess
 import re
 import os
 
-Timestamp = re.compile(':?\d\d')
+Timestamp = re.compile('(:?\d{1,2}){3}')
 
 class TracklistItem:
     def __init__(self, timestamp, title):
@@ -64,9 +64,15 @@ def load_tracklist(path):
 def parse_tracks(tracklist):
     tracks = []
     for lcount, line in enumerate(tracklist):
-        sline = line.split(' ', maxsplit=1)
-        if Timestamp.match(sline[0]):
-            tracks.append(TracklistItem(sline[0], sline[1].strip()))
+        sline = line.split(' ')
+        timestamp = sline[0]
+        for l in sline: # check line in case timestamp is in another element
+            if Timestamp.match(l):
+                timestamp = l
+                sline.remove(l)
+        title = ' '.join(sline).strip()
+        if Timestamp.match(timestamp):
+            tracks.append(TracklistItem(timestamp, title))
         else:
             print('missing timestamp: ', line)
     return tracks
@@ -82,10 +88,8 @@ def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
     cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
         '-f', 'null', '-']
     ret = subprocess.run(cmd, stderr=subprocess.PIPE)
-    # do some nasty string manip. to extract length printed to stderr
     length = str(ret.stderr).split('\\r')
-    print(len(length))
-    print(length[len(length)-1])
+    # some nasty string manip. to extract length (printed to stderr)
     length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
         
     for i, t in enumerate(tracks):
