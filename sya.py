@@ -12,6 +12,9 @@ class TracklistItem:
         self.timestamp = timestamp
         self.title = title
 
+def log(msg):
+    print('sya:', msg)
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='download & split audio tracks long youtube videos')
@@ -19,7 +22,7 @@ def parse_args():
     parser.add_argument('tracklist', metavar='TRACKLIST',
         help='tracklist to split audio by')
     # options
-    parser.add_argument('-o', '--output', metavar='PATH', type=str, nargs='?', default='out',
+    parser.add_argument('-o', '--output', metavar='PATH', type=str, nargs='?',
         help='specify the directory to write output files to (default: ./out)')
     parser.add_argument('-f', '--format', type=str, nargs='?', default='mp3',
         help='specify the --audio-format argument to pass to youtube-dl (default: mp3)')
@@ -44,6 +47,7 @@ def check_bin(*binaries):
             'Otherwise you can point to the binary using the relevant optional argument.')
 
 def get_audio(youtubedl, url, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
+    log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
     cmd = [youtubedl, url, '--extract-audio', '--audio-format', format,
         '--audio-quality', quality, '-o', 'audio.%(ext)s', '--prefer-ffmpeg']
     if keep == True:
@@ -85,6 +89,7 @@ def missing_times(tracks):
     return missing
 
 def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
+    log('splitting tracks...')
     cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
         '-f', 'null', '-']
     ret = subprocess.run(cmd, stderr=subprocess.PIPE)
@@ -93,12 +98,14 @@ def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
     length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
         
     for i, t in enumerate(tracks):
+        outfile = '{}/{} - {}.mp3'.format(outpath, str(i).zfill(2), t.title)
         end = length
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
+        log('\t{} ({} - {})'.format(outfile, t.timestamp, end))
         cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
-            '-i', audio_fpath, '-ss', t.timestamp, '-to', end, '-acodec', 'copy',
-            '{}/{} - {}.mp3'.format(outpath, str(i).zfill(2), t.title)]
+            '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
+            '-acodec', 'copy', outfile]
         subprocess.call(cmd)
     return
 
@@ -113,5 +120,8 @@ if __name__ == '__main__':
     missing = missing_times(tracks)
     if len(missing) > 0:
         sys.exit()
+    if args.output == None:
+        args.output = os.path.splitext(args.tracklist)[0]
     os.makedirs(args.output, exist_ok=True)
     split_tracks(args.ffmpeg, audio_fpath, tracks, args.output)
+    log('success')
