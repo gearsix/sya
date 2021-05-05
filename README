@@ -1,0 +1,53 @@
+
+sya
+===
+
+**split youtube audio**, a tool for downloading, converting and splitting a via youtube video
+using `youtube-dl` and `ffmpeg`.
+
+install
+-------
+
+**linux/terminal**
+
+```
+cd sya
+sudo make install
+```
+
+usage
+-----
+
+```
+usage: sya.py [-h] [-o [PATH]] [-f [FORMAT]] [-q [QUALITY]]
+              [--youtube-dl [PATH]] [--ffmpeg [PATH]] [-k]
+              TRACKLIST
+
+download & split audio tracks long youtube videos
+
+positional arguments:
+  TRACKLIST             tracklist to split audio by
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o [PATH], --output [PATH]
+                        specify the directory to write output files to
+                        (default: ./out)
+  -f [FORMAT], --format [FORMAT]
+                        specify the --audio-format argument to pass to
+                        youtube-dl (default: mp3)
+  -q [QUALITY], --quality [QUALITY]
+                        specify the --audio-quality argument to pass to
+                        youtube-dl (default: 320K)
+  --youtube-dl [PATH]   path of the "youtube-dl" binary to use
+  --ffmpeg [PATH]       path of the "ffmpeg" binary to use
+  -k, --keep            keep any files removed during processing (full
+                        video/audio file)
+
+```
+
+author
+------
+
+gearsix <gearsix@tuta.io>
+
