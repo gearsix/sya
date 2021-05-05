@@ -66,9 +66,9 @@ def parse_tracks(tracklist):
     for lcount, line in enumerate(tracklist):
         sline = line.split(' ', maxsplit=1)
         if Timestamp.match(sline[0]):
-            tracks.append(TracklistItem(sline[0], sline[1]))
+            tracks.append(TracklistItem(sline[0], sline[1].strip()))
         else: # assume there's no timestamp, whole line = track title
-            tracks.append(TracklistItem(None, line))
+            tracks.append(TracklistItem(None, line.strip()))
     return tracks
 
 def missing_times(tracks):
@@ -87,16 +87,24 @@ def find_times(tracks, missing):
     return tracks
 
 def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
-    ret = subprocess.run(['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
-        '-f', 'null', '-'], stdout=subprocess.PIPE)
-    print(ret)
+    cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
+        '-f', 'null', '-']
+    print(cmd)
+    ret = subprocess.run(cmd, stderr=subprocess.PIPE)
+    # do some nasty string manip. to extract length printed to stderr
+    length = str(ret.stderr).split('\\r')
+    print(len(length))
+    print(length[len(length)-1])
+    length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+        
     for i, t in enumerate(tracks):
-        end = 'END'
+        end = length
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
-        subprocess.call(['ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
+        cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end, '-acodec', 'copy',
-            '{}/{} - {}.mp3'.format(outpath, str(i).zfill(2), t.title)])
+            '{}/{} - {}.mp3'.format(outpath, str(i).zfill(2), t.title)]
+        subprocess.call(cmd)
     return
 
 if __name__ == '__main__':
