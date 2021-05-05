@@ -67,8 +67,8 @@ def parse_tracks(tracklist):
         sline = line.split(' ', maxsplit=1)
         if Timestamp.match(sline[0]):
             tracks.append(TracklistItem(sline[0], sline[1].strip()))
-        else: # assume there's no timestamp, whole line = track title
-            tracks.append(TracklistItem(None, line.strip()))
+        else:
+            print('missing timestamp: ', line)
     return tracks
 
 def missing_times(tracks):
@@ -78,18 +78,9 @@ def missing_times(tracks):
             missing.append(i)
     return missing
 
-def find_times(tracks, missing):
-    j = 0
-    for i, t in enumerate(tracks):
-        if i == missing[j]:
-            # TODO
-            j += 1
-    return tracks
-
 def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
     cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
         '-f', 'null', '-']
-    print(cmd)
     ret = subprocess.run(cmd, stderr=subprocess.PIPE)
     # do some nasty string manip. to extract length printed to stderr
     length = str(ret.stderr).split('\\r')
@@ -109,13 +100,14 @@ def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
 
 if __name__ == '__main__':
     args = parse_args()
-    check_bin(args.youtubedl, args.ffmpeg)
+    if !check_bin(args.youtubedl, args.ffmpeg):
+        sys.exit()
     tracklist = load_tracklist(args.tracklist)
     audio_fpath = get_audio(args.youtubedl, tracklist[0],
             args.format, args.quality, args.keep, args.ffmpeg)
     tracks = parse_tracks(tracklist[1:])
     missing = missing_times(tracks)
     if len(missing) > 0:
-        tracks = find_times(tracks, missing)
+        sys.exit()
     os.makedirs(args.output, exist_ok=True)
     split_tracks(args.ffmpeg, audio_fpath, tracks, args.output)
