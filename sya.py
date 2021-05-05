@@ -100,7 +100,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
 
 if __name__ == '__main__':
     args = parse_args()
-    if !check_bin(args.youtubedl, args.ffmpeg):
+    if check_bin(args.youtubedl, args.ffmpeg) == False:
         sys.exit()
     tracklist = load_tracklist(args.tracklist)
     audio_fpath = get_audio(args.youtubedl, tracklist[0],
