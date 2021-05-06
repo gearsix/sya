@@ -15,6 +15,10 @@ class TracklistItem:
 def log(msg):
     print('sya:', msg)
 
+def error_exit(msg):
+    log('exit failure "{}"'.format(msg))
+    exit()
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description='download & split audio tracks long youtube videos')
@@ -53,7 +57,8 @@ def get_audio(youtubedl, url, format='mp3', quality='320K', keep=True, ffmpeg='f
     if keep == True:
         cmd.append('-k')
     if ffmpeg != 'ffmpeg':
-        cmd.append('--ffmpeg-location ', ffmpeg)
+        cmd.append('--ffmpeg-location')
+        cmd.append(ffmpeg)
     subprocess.call(cmd)
     return './audio.mp3'
 
@@ -75,10 +80,10 @@ def parse_tracks(tracklist):
                 timestamp = l
                 sline.remove(l)
         title = ' '.join(sline).strip()
-        if Timestamp.match(timestamp):
-            tracks.append(TracklistItem(timestamp, title))
-        else:
-            print('missing timestamp: ', line)
+        if Timestamp.match(timestamp) == None:
+            log('line {}, missing timestamp: "{}"'.format(lcount, line))
+            timestamp = None
+        tracks.append(TracklistItem(timestamp, title))
     return tracks
 
 def missing_times(tracks):
@@ -112,14 +117,14 @@ def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
 if __name__ == '__main__':
     args = parse_args()
     if check_bin(args.youtubedl, args.ffmpeg) == False:
-        sys.exit()
+        error_exit('required binaries are missing')
     tracklist = load_tracklist(args.tracklist)
     audio_fpath = get_audio(args.youtubedl, tracklist[0],
             args.format, args.quality, args.keep, args.ffmpeg)
     tracks = parse_tracks(tracklist[1:])
     missing = missing_times(tracks)
     if len(missing) > 0:
-        sys.exit()
+        error_exit('some tracks are missing timestamps')
     if args.output == None:
         args.output = os.path.splitext(args.tracklist)[0]
     os.makedirs(args.output, exist_ok=True)
