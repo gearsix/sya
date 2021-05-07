@@ -5,7 +5,7 @@ import subprocess
 import re
 import os
 
-Timestamp = re.compile('(:?\d{1,2}){3}')
+Timestamp = re.compile('[\[,\(]?(:?\d{1,2}){3}[\],\)]?')
 
 class TracklistItem:
     def __init__(self, timestamp, title):
@@ -66,7 +66,9 @@ def load_tracklist(path):
     tracklist = []
     tracklist_file = open(path, mode = 'r')
     for t in tracklist_file.readlines():
-        tracklist.append(t.strip('\n'))
+        t = t.strip('\n\t ')
+        if len(t) > 0:
+            tracklist.append(t)
     tracklist_file.close()
     return tracklist
 
@@ -77,9 +79,9 @@ def parse_tracks(tracklist):
         timestamp = sline[0]
         for l in sline: # check line in case timestamp is in another element
             if Timestamp.match(l):
-                timestamp = l
+                timestamp = l.strip('[()]')
                 sline.remove(l)
-        title = ' '.join(sline).strip()
+        title = ' '.join(sline).strip(' ')
         if Timestamp.match(timestamp) == None:
             log('line {}, missing timestamp: "{}"'.format(lcount, line))
             timestamp = None

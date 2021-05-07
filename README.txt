@@ -26,6 +26,10 @@ TRACKLIST
   TRACKLIST files should be text file that has the URL/v=code of the youtube video to
   download on the first line and the starting timestamp of each section to split, followed
   by the title of that section section.
+
+  Of course, you don't have to put the timestamp first. sya will try and accomocodate
+  whatever syntax is used, just beware that this might cause problems.
+
   Here is an example:
 
 	https://www.youtube.com/watch?v=ors0wpcVDcc
@@ -46,7 +50,6 @@ TRACKLIST
 	35007 - 22 25 & 61 74 [1:31:07]
 	Stoned Cobra - Black Spiral Dancer [1:39:39]
 	U.S. Christmas - Suzerain [1:48:09] 
-	(I fucked up, the picture didn't make it. 
 	Comacozer - BinBeal [1:56:53]
 	Kungens Män- Bortkopplad från tiden [2:14:52]
 	The Kings of Frog Island - Laid [2:35:03]
