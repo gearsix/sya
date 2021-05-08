@@ -5,6 +5,7 @@ import subprocess
 import re
 import os
 import sys
+import gui
 import PyQt5.QtWidgets as pyqt
 
 Timestamp = re.compile('[\[,\(]?(:?\d{1,2}){3}[\],\)]?')
@@ -13,67 +14,6 @@ class TracklistItem:
     def __init__(self, timestamp, title):
         self.timestamp = timestamp
         self.title = title
-
-class GUI:
-    def __init__(self, widget):
-        self.widget = widget
-        self.init_widget()
-        self.filepickerbtn = pyqt.QPushButton(widget)
-        self.pathlabel = pyqt.QLabel('Tracklist:', widget)
-        self.textbox = pyqt.QTextEdit(widget)
-        self.init_tracklist()
-        self.init_readme()
-
-    def filepicker(self, signal):
-        file = pyqt.QFileDialog.getOpenFileName(self.widget, 'Select a tracklist', os.path.expanduser("~"), "text file (*.txt)")
-        if file[1] == 'text file (*.txt)':
-            self.pathlineditor.setText(file[0])
-
-    def init_widget(self):
-        widget.setWindowTitle('sya')
-        widget.resize(500, 500)
-        #widget.setWindowIcon(pyqt.QIcon('icon.png'))
-
-    def init_tracklist(self):
-        #self.filepickerbtn.setIcon(QIcon('logo.png'))
-        self.filepickerbtn.move(25, 25)
-        self.filepickerbtn.resize(40, 40)
-        self.filepickerbtn.clicked.connect(self.filepicker)
-        
-        self.pathlabel.move(75, 23)
-        
-        self.pathlineditor = pyqt.QLineEdit(widget)
-        self.pathlineditor.move(75, 38)
-        self.pathlineditor.resize(400, 25)
-
-    def init_readme(self):
-        self.textbox.resize(450, 330)
-        self.textbox.move(25, 120)
-        self.textbox.setReadOnly(True)
-        self.textbox.setPlainText('''
-    DESCRIPTION
-      sya downloads, converts and splits youtube videos using `youtube-dl` and `ffmpeg`.
-      while intended for long audio mixtapes, the tools it uses are quite flexible so
-      you could use it to download & split long videos as well.
-
-    TRACKLIST
-      TRACKLIST files should be text file that has the URL/v=code of the youtube video to
-      download on the first line and the starting timestamp of each section to split, followed
-      by the title of that section section.
-      Here is an example:
-
-        https://www.youtube.com/watch?v=ors0wpcVDcc
-        Los Natas - Brisa Del Desierto [00:00]
-        Sleeping Pandora - Through The Maze [02:05]
-        Fluidage - Feel Like I Do [12:43]
-        My Sleeping Karma - Psilocybe [18:11]
-        Daisy Pusher - While Wailing (Only a Part) [26:01]
-        The Whirlings - Worries on a Shelf [30:49]
-        Arenna - Move Through Figurehead Lights [36:28]
-        Ten East - Skyline Pressure [43:32]
-        Wooden Shjips - These Shadows [49:24]
-        ...etc
-    ''')
 
 def log(msg):
     print('sya:', msg)
@@ -183,10 +123,10 @@ if __name__ == '__main__':
     args = parse_args()
     if len(sys.argv) == 1:
         app = pyqt.QApplication([])
-        widget = pyqt.QWidget()
-        gui = GUI(widget)
-        widget.show()
+        args = gui.Args(args)
         sys.exit(app.exec_())
+        #while app.exec_():
+        #    continue
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
     tracklist = load_tracklist(args.tracklist)
