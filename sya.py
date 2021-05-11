@@ -98,7 +98,7 @@ def missing_times(tracks):
             missing.append(i)
     return missing
 
-def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
+def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
     log('splitting tracks...')
     cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
         '-f', 'null', '-']
@@ -108,7 +108,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, outpath):
     length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
         
     for i, t in enumerate(tracks):
-        outfile = '{}/{} - {}.mp3'.format(outpath, str(i).zfill(2), t.title)
+        outfile = '{}/{} - {}.{}'.format(outpath, str(i).zfill(2), t.title, format)
         end = length
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
@@ -124,9 +124,10 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         app = pyqt.QApplication([])
         args = gui.Args(args)
-        sys.exit(app.exec_())
-        #while app.exec_():
-        #    continue
+        while app.exec_():
+            continue
+        print('remove this sys.exit()')
+        sys.exit()
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
     tracklist = load_tracklist(args.tracklist)
@@ -139,5 +140,5 @@ if __name__ == '__main__':
     if args.output == None:
         args.output = os.path.splitext(args.tracklist)[0]
     os.makedirs(args.output, exist_ok=True)
-    split_tracks(args.ffmpeg, audio_fpath, tracks, args.output)
+    split_tracks(args.ffmpeg, audio_fpath, tracks, args.format, args.output)
     log('success')
