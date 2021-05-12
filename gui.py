@@ -124,14 +124,14 @@ class Args:
     def _init_tracklist(self):
         y = 220
         x = 25
-        self._tracklist_pbtn.setIcon(pyqt_gui.QIcon('folder.png'))
+        self._tracklist_pbtn.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/folder.png'))
         self._tracklist_pbtn.move(self._getx_btn(x), self._gety_btn(y))
         self._tracklist_pbtn.resize(self._sizex_btn, self._sizey_btn)
         self._tracklist_pbtn.clicked.connect(self._filepicker_tracklist)
         self._tracklist_label.move(self._getx_label(x), self._gety_label(y))
         self._tracklist_edit.move(self._getx_edit(x), self._gety_edit(y))
         self._tracklist_edit.resize(300, 25)
-        self._tracklist_help.setIcon(pyqt_gui.QIcon('question.png'))
+        self._tracklist_help.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/question.png'))
         self._tracklist_help.move(self._getx_label(x) + 280, self._gety_label(y) - 50)
 
         self._tracklist_help.resize(18, 20)
@@ -200,7 +200,8 @@ class Args:
     def _init_output(self):
         y = 355
         x = 25
-        self._output_pbtn.setIcon(pyqt_gui.QIcon('folder.png'))
+        print(__file__)
+        self._output_pbtn.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/folder.png'))
         self._output_pbtn.move(self._getx_btn(x), self._gety_btn(y))
         self._output_pbtn.resize(self._sizex_btn, self._sizey_btn)
         self._output_pbtn.clicked.connect(self._filepicker_output)
