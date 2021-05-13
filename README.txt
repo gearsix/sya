@@ -79,6 +79,9 @@ TRACKLIST
 INSTALL
   If you'd like to use sya from the CLI, then "cd" into the the sya directory
   and run "sudo make install"
+  
+CREDITS
+  - MicroMoon theme for Palemoon, from which I borrowed the icons used
 
 AUTHORS
   - gearsix <gearsix@tuta.io>
