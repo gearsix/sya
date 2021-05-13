@@ -21,11 +21,11 @@ class Args:
         # INFO
         self._info_label = pyqt_widgets.QLabel('INFO:', self._widget)
         self._info_textedit = pyqt_widgets.QTextEdit(self._widget)
+        self._info_help = pyqt_widgets.QPushButton(self._widget)
         # Tracklist
         self._tracklist_pbtn = pyqt_widgets.QPushButton(self._widget)
         self._tracklist_label = pyqt_widgets.QLabel('Tracklist:', self._widget)
         self._tracklist_edit = pyqt_widgets.QLineEdit(self._widget)
-        self._tracklist_help = pyqt_widgets.QPushButton(self._widget)
         # youtube-dl
         #self._youtube_pbtn = pyqt_widgets.QPushButton(self._widget)
         #self._youtube_label = pyqt_widgets.QLabel('youtube-dl:', self._widget)
@@ -35,7 +35,7 @@ class Args:
         #self._ffmpeg_label = pyqt_widgets.QLabel('ffmpeg:', self._widget)
         #self._ffmpeg_edit = pyqt_widgets.QLineEdit(self._widget)
         # misc. options
-        self._keep_checkbox = pyqt_widgets.QCheckBox('keep whole track', self._widget)
+        self._keep_checkbox = pyqt_widgets.QCheckBox('keep original', self._widget)
         self._format_label = pyqt_widgets.QLabel('Format:', self._widget)
         self._format_combobox = pyqt_widgets.QComboBox(self._widget)
         self._quality_label = pyqt_widgets.QLabel('Quality:', self._widget)
@@ -67,13 +67,13 @@ class Args:
         return base + 45
    
     def _gety_label(self, base):
-        return base - 1
+        return base
 
     def _getx_edit(self, base):
         return base + 45
 
     def _gety_edit(self, base):
-        return base + 20
+        return base + 15
     
     def _filepicker_tracklist(self, signal):
         file = pyqt_widgets.QFileDialog.getOpenFileName(self._widget, 'Select a tracklist',
@@ -115,14 +115,14 @@ class Args:
     def _init_widget(self):
         self._widget.setWindowTitle('sya')
         #self._widget.setWindowIcon(pyqt_uwidgets.QIcon('icon.png'))
-        self._widget.setFixedSize(400, 470)
+        self._widget.setFixedSize(400, 350)
         sg = pyqt_widgets.QDesktopWidget().screenGeometry()
         wg = self._widget.geometry()
         self._widget.move(sg.width() / 2 - wg.width() / 2,
             sg.height() / 2 - wg.height() / 2)
 
     def _init_tracklist(self):
-        y = 220
+        y = 170
         x = 25
         self._tracklist_pbtn.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/folder.png'))
         self._tracklist_pbtn.move(self._getx_btn(x), self._gety_btn(y))
@@ -131,10 +131,6 @@ class Args:
         self._tracklist_label.move(self._getx_label(x), self._gety_label(y))
         self._tracklist_edit.move(self._getx_edit(x), self._gety_edit(y))
         self._tracklist_edit.resize(300, 25)
-        self._tracklist_help.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/question.png'))
-        self._tracklist_help.move(self._getx_label(x) + 280, self._gety_label(y) - 50)
-
-        self._tracklist_help.resize(18, 20)
     
     def _init_youtubedl(self):
         y = 420
@@ -159,16 +155,16 @@ class Args:
         self._ffmpeg_edit.setText(self.ffmpeg)
 
     def _init_keep(self):
-        y = 315
-        x = 30
+        y = 226.5
+        x = 285
         self._keep_checkbox.move(x, y)
         self._keep_checkbox.toggled.connect(self._keep_toggle)
 
     def _init_format(self):
-        y = 275
+        y = 225
         x = 30
-        self._format_label.move(x, y+3)
-        self._format_combobox.move(x + 70, y)
+        self._format_label.move(x, y + 3)
+        self._format_combobox.move(x + 45, y)
         self._format_combobox.activated[str].connect(self._format_change)
         self._format_combobox.addItem('mp3')
         self._format_combobox.addItem('mp4')
@@ -181,10 +177,10 @@ class Args:
         self._format_combobox.addItem('flv')
 
     def _init_quality(self):
-        y = 275
-        x = 190
-        self._quality_label.move(x, y+3)
-        self._quality_combobox.move(x + 70, y)
+        y = 225
+        x = 145
+        self._quality_label.move(x, y + 3)
+        self._quality_combobox.move(x + 45, y)
         self._quality_combobox.activated[str].connect(self._format_change)
         self._quality_combobox.addItem('0 (better)')
         self._quality_combobox.addItem('1')
@@ -198,7 +194,7 @@ class Args:
         self._quality_combobox.addItem('9 (worse)')
 
     def _init_output(self):
-        y = 355
+        y = 260
         x = 25
         print(__file__)
         self._output_pbtn.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/folder.png'))
@@ -214,10 +210,12 @@ class Args:
         x = 25
         y = 60
         self._info_label.move(x, y)
-#        self._info_textedit.resize(450, 300)
-        self._info_textedit.resize(350, 115)
+        self._info_help.setIcon(pyqt_gui.QIcon(os.path.dirname(__file__) + '/question.png'))
+        self._info_help.move(x + 325, y + 75)
+        self._info_help.resize(18, 20)
+        #self._info_textedit.resize(350, 115)
+        self._info_textedit.resize(350, 80)
         self._info_textedit.move(x, y + 20)
         self._info_textedit.setReadOnly(True)
-        self._info_textedit.setPlainText('''sya is a simple python script that downloads youtube videos, extracts their audio and splits that audio into mutliple tracks using "youtube-dl" and "ffmpeg".
-
-Click "?" for help.''')
+        self._info_textedit.setHtml('''<p><b>sya</b> is a simple tool that uses <u>youtube-dl</u> and <u>ffmpeg</u> to <i>download</i> youtube videos, <i>extract</i> the audio and <i>split</i> it into mutliple tracks.</p>
+        <p>Click "?" for further help.</p>''')
