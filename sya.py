@@ -43,6 +43,8 @@ def parse_args():
         help='path of the "ffmpeg" binary to use')
     parser.add_argument('-k', '--keep', action='store_true',
         help='keep any files removed during processing (full video/audio file)')
+    parser.add_argument('-g', '--gui', action='store_true',
+        help='run the gui for configuring options')
     return parser.parse_args()
 
 def check_bin(*binaries):
@@ -121,14 +123,12 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
 
 if __name__ == '__main__':
     args = parse_args()
-    if len(sys.argv) == 1:
-        app = pyqt.QApplication([])
+    if args.gui:
         argsGui = gui.Args(args)
-        while app.exec_():
-            continue
-        print('remove this sys.exit()')
         args = argsGui.args
-        sys.exit()
+        del(argsGui)
+        if args.gui == True: # cancel exit
+            sys.exit()
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
     tracklist = load_tracklist(args.tracklist)
