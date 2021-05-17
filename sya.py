@@ -123,10 +123,11 @@ if __name__ == '__main__':
     args = parse_args()
     if len(sys.argv) == 1:
         app = pyqt.QApplication([])
-        args = gui.Args(args)
+        argsGui = gui.Args(args)
         while app.exec_():
             continue
         print('remove this sys.exit()')
+        args = argsGui.args
         sys.exit()
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
