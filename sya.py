@@ -131,6 +131,8 @@ if __name__ == '__main__':
             sys.exit()
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
+    if args.tracklist == None or args.output == None:
+        error_exit('tracklist and/or output paths are missing')
     tracklist = load_tracklist(args.tracklist)
     audio_fpath = get_audio(args.youtubedl, tracklist[0],
             args.format, args.quality, args.keep, args.ffmpeg)
