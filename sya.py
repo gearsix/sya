@@ -55,10 +55,11 @@ def check_bin(*binaries):
             print(b, 'failed to execute, check it exists in your $PATH.\n'
             'Otherwise you can point to the binary using the relevant optional argument.')
 
-def get_audio(youtubedl, url, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
+def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
     log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
     cmd = [youtubedl, url, '--extract-audio', '--audio-format', format,
-        '--audio-quality', quality, '-o', 'audio.%(ext)s', '--prefer-ffmpeg']
+        '--audio-quality', quality, '-o', '{}/{}.%(ext)s'.format(outdir, os.path.basename(outdir)),
+        '--prefer-ffmpeg']
     if keep == True:
         cmd.append('-k')
     if ffmpeg != 'ffmpeg':
@@ -131,10 +132,12 @@ if __name__ == '__main__':
             sys.exit()
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
-    if args.tracklist == None or args.output == None:
-        error_exit('tracklist and/or output paths are missing')
+    if args.tracklist == None:
+        error_exit('missing tracklist')
+    if args.output == None:
+        args.output = "./out"
     tracklist = load_tracklist(args.tracklist)
-    audio_fpath = get_audio(args.youtubedl, tracklist[0],
+    audio_fpath = get_audio(args.youtubedl, tracklist[0], args.output,
             args.format, args.quality, args.keep, args.ffmpeg)
     tracks = parse_tracks(tracklist[1:])
     missing = missing_times(tracks)
