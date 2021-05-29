@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
+# std
 import argparse
 import subprocess
 import re
 import os
 import sys
+import threading
+# sya
 import gui
 
 Timestamp = re.compile('[\[,\(]?(:?\d{1,2}){3}[\],\)]?')
@@ -15,7 +18,8 @@ class TracklistItem:
         self.title = title
 
 def log(msg):
-    print('sya:', msg)
+    msg = 'sya: ' + msg
+    print(msg)
 
 def error_exit(msg):
     log('exit failure "{}"'.format(msg))
@@ -57,14 +61,16 @@ def check_bin(*binaries):
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
     log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
     cmd = [youtubedl, url, '--extract-audio', '--audio-format', format,
-        '--audio-quality', quality, '-o', '{}/{}.%(ext)s'.format(outdir, os.path.basename(outdir)),
-        '--prefer-ffmpeg']
+        '--audio-quality', quality, '--prefer-ffmpeg', '-o',
+        '{}/{}.%(ext)s'.format(outdir, os.path.basename(outdir))]
     if keep == True:
         cmd.append('-k')
     if ffmpeg != 'ffmpeg':
         cmd.append('--ffmpeg-location')
         cmd.append(ffmpeg)
-    subprocess.call(cmd)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in iter(p.stdout.readline, b''):
+        log(line.decode('utf-8').rstrip('\n'))
     return './audio.mp3'
 
 def load_tracklist(path):
@@ -118,8 +124,32 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
         cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
             '-acodec', 'copy', outfile]
-        subprocess.call(cmd)
+        subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        for line in iter(p.stdout.readline, b''):
+            log(line.decode('utf-8').rstrip('\n'))
     return
+
+def sya(args):
+    # validate args
+    if check_bin(args.youtubedl, args.ffmpeg) == False:
+        error_exit('required binaries are missing')
+    if args.tracklist == None:
+        error_exit('missing tracklist')
+    if args.output == None:
+        args.output = os.path.splitext(args.tracklist)[0]
+
+    tracklist = load_tracklist(args.tracklist)
+    audio_fpath = get_audio(args.youtubedl, args.output, tracklist[0],
+            args.format, args.quality, args.keep, args.ffmpeg)
+    tracks = parse_tracks(tracklist[1:])
+
+    missing = missing_times(tracks)
+    if len(missing) > 0:
+        error_exit('some tracks are missing timestamps')
+
+    os.makedirs(args.output, exist_ok=True)
+    split_tracks(args.ffmpeg, audio_fpath, tracks, args.format, args.output)
+    log('success')
 
 if __name__ == '__main__':
     args = parse_args()
@@ -129,21 +159,6 @@ if __name__ == '__main__':
         del(argsGui)
         if args.gui == True: # cancel exit
             sys.exit()
-    if check_bin(args.youtubedl, args.ffmpeg) == False:
-        error_exit('required binaries are missing')
-    if args.tracklist == None:
-        error_exit('missing tracklist')
-    if args.output == None:
-        args.output = "./out"
-    tracklist = load_tracklist(args.tracklist)
-    audio_fpath = get_audio(args.youtubedl, tracklist[0], args.output,
-            args.format, args.quality, args.keep, args.ffmpeg)
-    tracks = parse_tracks(tracklist[1:])
-    missing = missing_times(tracks)
-    if len(missing) > 0:
-        error_exit('some tracks are missing timestamps')
-    if args.output == None:
-        args.output = os.path.splitext(args.tracklist)[0]
-    os.makedirs(args.output, exist_ok=True)
-    split_tracks(args.ffmpeg, audio_fpath, tracks, args.format, args.output)
-    log('success')
+        logsGui = gui.Log(sya, [args])
+    else:
+        sya(args)
