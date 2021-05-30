@@ -9,6 +9,8 @@ import sys
 import threading
 # sya
 import gui
+# pip
+import PyQt5.QtWidgets as pyqt_widgets
 
 Timestamp = re.compile('[\[,\(]?(:?\d{1,2}){3}[\],\)]?')
 
@@ -154,11 +156,8 @@ def sya(args):
 if __name__ == '__main__':
     args = parse_args()
     if args.gui:
-        argsGui = gui.Args(args)
-        args = argsGui.args
-        del(argsGui)
-        if args.gui == True: # cancel exit
-            sys.exit()
-        logsGui = gui.Log(sya, [args])
+        app = pyqt_widgets.QApplication(sys.argv)
+        options = gui.SyaGui(sya, args)
+        sys.exit(app.exec())
     else:
         sya(args)
