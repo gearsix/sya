@@ -24,10 +24,10 @@ class SyaGui(pyqt_widgets.QMainWindow):
     def __init__(self, fnSya, args):
         super().__init__()
 
-        self.fnSya = fnSya
         self.args = args
+        self.main = fnSya
+        
         self._edits = {}
-
         options = pyqt_widgets.QWidget()
         options.setWindowTitle('sya')
         options = self._init_options(options)
@@ -35,50 +35,76 @@ class SyaGui(pyqt_widgets.QMainWindow):
         options.move(centerWidget(options))
         self._options = options
 
-        logs = pyqt_widgets.QPlainTextEdit()
-        logs.setReadOnly(True)
-        logs.resize(350, 350)
+        logs = pyqt_widgets.QWidget()
+        logs.resize(650, 350)
+        logs = self._init_logs(logs)
         logs.move(centerWidget(logs))
         self._logs = logs
+
         sys.stdout = LogStream(txt=self.log)
-        
         self._options.show()
 
     def _init_options(self, options):
         layout = pyqt_widgets.QGridLayout()
         # tracklist
         self._tracklistLabel = 'Tracklist:'
-        layout.addLayout(self._init_filepicker(options, self._tracklistLabel, self._filepicker_tracklist), 0, 0, 1, 3)
+        layout.addLayout(self._init_filepicker(options, self._tracklistLabel,
+            self._filepicker_tracklist, self.args.tracklist), 0, 0, 1, 3)
         # formats
         formats = ['mp3', 'flv', 'wav', 'ogg', 'aac']
-        layout.addLayout(self._init_combobox(options, 'Format:', self._set_format, formats), 1, 0)
+        layout.addLayout(self._init_combobox(options, 'Format:', self._set_format, formats,
+            self.args.format), 1, 0)
         # quality
         qualities = ['0 (better)', '1', '2', '3', '4', '5', '6', '7', '8', '9 (worse)']
-        layout.addLayout(self._init_combobox(options, 'Quality:', self._set_quality, qualities), 2, 0)
+        layout.addLayout(self._init_combobox(options, 'Quality:', self._set_quality, qualities,
+            self.args.quality), 2, 0)
         # keep
-        self.args.quality = '0'
         keep = pyqt_widgets.QCheckBox('keep original', options)
-        keep.toggled.connect(self._keep_toggle)
+        if self.args.keep == True:
+            keep.setChecked(True)
+        keep.toggled.connect(self._keep_toggle, self.args.keep)
         layout.addWidget(keep, 1, 1, 2, 1)
         # output
         self._outputLabel = 'Output:'
-        layout.addLayout(self._init_filepicker(options, self._outputLabel, self._filepicker_output), 3, 0, 1, 3)
+        layout.addLayout(self._init_filepicker(options, self._outputLabel, self._filepicker_output,
+            self.args.output), 3, 0, 1, 3)
+        # quit
+        cancel_btn = pyqt_widgets.QPushButton('Quit')
+        cancel_btn.clicked.connect(sys.exit)
+        layout.addWidget(cancel_btn, 4, 1)
         # ok
         self._ok_btn = pyqt_widgets.QPushButton('OK')
         self._ok_btn.clicked.connect(self._ok)
-        layout.addWidget(self._ok_btn, 4, 1)
+        layout.addWidget(self._ok_btn, 4, 2)
         self._check_ok()
 
         options.setLayout(layout)
         return options
 
-    def _init_filepicker(self, widget, labelText, filepickerFn):
+    def _init_logs(self, logs):
+        layout = pyqt_widgets.QGridLayout()
+        # textbox
+        logbox = pyqt_widgets.QPlainTextEdit()
+        logbox.setReadOnly(True)
+        self._logbox = logbox
+        layout.addWidget(logbox, 1, 1, 1, 3)
+        # quit
+        self._cancel_btn = pyqt_widgets.QPushButton('Quit')
+        self._cancel_btn.clicked.connect(sys.exit)
+        layout.addWidget(self._cancel_btn, 2, 2)
+
+        logs.setLayout(layout)
+        return logs
+
+    def _init_filepicker(self, widget, labelText, filepickerFn, default=None):
         layout = pyqt_widgets.QHBoxLayout()
         # label
         label = pyqt_widgets.QLabel(labelText, widget)
         layout.addWidget(label)
         # line edit
         self._edits[labelText] = pyqt_widgets.QLineEdit(widget)
+        if default != None:
+            self._edits[labelText].setText(default)
         layout.addWidget(self._edits[labelText])
         # filepicker btn
         button_logo = pyqt_gui.QIcon(os.path.dirname(__file__) + '/folder.png')
@@ -88,16 +114,18 @@ class SyaGui(pyqt_widgets.QMainWindow):
 
         return layout
 
-    def _init_combobox(self, widget, label, setFn, options):
+    def _init_combobox(self, widget, label, setFn, options, default):
         layout = pyqt_widgets.QHBoxLayout()
         # label
         label = pyqt_widgets.QLabel(label, widget)
         layout.addWidget(label)
         # combobox
         combo = pyqt_widgets.QComboBox(widget)
-        combo.activated[str].connect(setFn)
         for opt in options:
             combo.addItem(opt)
+        if default in options:
+            combo.setCurrentIndex(options.index(default))
+        combo.activated[str].connect(setFn)
         layout.addWidget(combo)
 
         layout.setStretch(0, 2)
@@ -132,20 +160,22 @@ class SyaGui(pyqt_widgets.QMainWindow):
         self.args.keep = not self.args.keep
 
     def _check_ok(self):
-        if self.args.tracklist != None and os.path.exists(self.args.tracklist) and len(self.args.output) > 0:
+        if self.args.tracklist != None and self.args.output != None and \
+        os.path.exists(self.args.tracklist) and len(self.args.output) > 0:
             self._ok_btn.setEnabled(True)
         else:
             self._ok_btn.setEnabled(False)
 
     def _ok(self):
         del(self._options)
+        del(self._ok_btn)
         self._logs.show()
-        threading.Thread(target=self.fnSya, args=[self.args]).start()
+        threading.Thread(target=self.main, args=[self.args]).start()
 
     def log(self, msg):
-        cursor = self._logs.textCursor()
+        cursor = self._logbox.textCursor()
         cursor.movePosition(pyqt_gui.QTextCursor.End)
         cursor.insertText(msg)
-        self._logs.setTextCursor(cursor)
-        self._logs.ensureCursorVisible()
+        self._logbox.setTextCursor(cursor)
+        self._logbox.ensureCursorVisible()
 
