@@ -61,10 +61,10 @@ def check_bin(*binaries):
             'Otherwise you can point to the binary using the relevant optional argument.')
 
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
-    log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
+    log('{} getting {}, {} ({}) -> {}/{}.{}'.format(youtubedl, format, quality, url, outdir, os.path.basename(outdir), format))
     cmd = [youtubedl, url, '--extract-audio', '--audio-format', format,
         '--audio-quality', quality, '--prefer-ffmpeg', '-o',
-        '{}/{}.%(ext)s'.format(outdir, os.path.basename(outdir))]
+        '{}/{}.{}'.format(outdir, os.path.basename(outdir), format)]
     if keep == True:
         cmd.append('-k')
     if ffmpeg != 'ffmpeg':
@@ -112,10 +112,14 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
     log('splitting tracks...')
     cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
         '-f', 'null', '-']
-    ret = subprocess.run(cmd, stderr=subprocess.PIPE)
+    ret = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     length = str(ret.stderr).split('\\r')
     # some nasty string manip. to extract length (printed to stderr)
-    length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+    try:
+        length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+    except:
+        log('Failed to find track length, {}'.format(length))
+        return
         
     for i, t in enumerate(tracks):
         outfile = '{}/{} - {}.{}'.format(outpath, str(i).zfill(2), t.title, format)
@@ -126,7 +130,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
         cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
             '-acodec', 'copy', outfile]
-        subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in iter(p.stdout.readline, b''):
             log(line.decode('utf-8').rstrip('\n'))
     return
@@ -135,13 +139,13 @@ def sya(args):
     # validate args
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
-    if args.tracklist == None:
+    if args.tracklist == None or os.path.exists(args.tracklist) == False:
         error_exit('missing tracklist')
     if args.output == None:
         args.output = os.path.splitext(args.tracklist)[0]
 
     tracklist = load_tracklist(args.tracklist)
-    audio_fpath = get_audio(args.youtubedl, args.output, tracklist[0],
+    audio_fpath = get_audio(args.youtubedl, tracklist[0], args.output,
             args.format, args.quality, args.keep, args.ffmpeg)
     tracks = parse_tracks(tracklist[1:])
 
