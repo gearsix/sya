@@ -3,7 +3,7 @@
 # std
 import os
 import sys
-import threading
+import subprocess
 # pip
 import PyQt5.QtCore as pyqt_core
 import PyQt5.QtWidgets as pyqt_widgets
@@ -20,12 +20,24 @@ class LogStream(pyqt_core.QObject):
     def write(self, txt):
         self.txt.emit(str(txt))
 
+class SyaGuiMain(pyqt_core.QThread):
+    def __init__(self, fn, args=None):
+        super().__init__()
+        self.fn = fn
+        self.args = args
+
+    def run(self):
+        if self.args != None:
+            self.fn(self.args)
+        else:
+            self.fn()
+
 class SyaGui(pyqt_widgets.QMainWindow):
     def __init__(self, fnSya, args):
         super().__init__()
 
         self.args = args
-        self.main = fnSya
+        self.fnSya = fnSya
         
         self._edits = {}
         options = pyqt_widgets.QWidget()
@@ -36,7 +48,7 @@ class SyaGui(pyqt_widgets.QMainWindow):
         self._options = options
 
         logs = pyqt_widgets.QWidget()
-        logs.resize(650, 350)
+        logs.resize(800, 400)
         logs = self._init_logs(logs)
         logs.move(centerWidget(logs))
         self._logs = logs
@@ -69,9 +81,9 @@ class SyaGui(pyqt_widgets.QMainWindow):
         layout.addLayout(self._init_filepicker(options, self._outputLabel, self._filepicker_output,
             self.args.output), 3, 0, 1, 3)
         # quit
-        cancel_btn = pyqt_widgets.QPushButton('Quit')
-        cancel_btn.clicked.connect(sys.exit)
-        layout.addWidget(cancel_btn, 4, 1)
+        quit_btn = pyqt_widgets.QPushButton('Quit')
+        quit_btn.clicked.connect(sys.exit)
+        layout.addWidget(quit_btn, 4, 1)
         # ok
         self._ok_btn = pyqt_widgets.QPushButton('OK')
         self._ok_btn.clicked.connect(self._ok)
@@ -87,11 +99,19 @@ class SyaGui(pyqt_widgets.QMainWindow):
         logbox = pyqt_widgets.QPlainTextEdit()
         logbox.setReadOnly(True)
         self._logbox = logbox
-        layout.addWidget(logbox, 1, 1, 1, 3)
-        # quit
-        self._cancel_btn = pyqt_widgets.QPushButton('Quit')
-        self._cancel_btn.clicked.connect(sys.exit)
-        layout.addWidget(self._cancel_btn, 2, 2)
+        layout.addWidget(logbox, 1, 0, 1, 5)
+        # cancel
+        cancel_btn = pyqt_widgets.QPushButton('Cancel')
+        cancel_btn.clicked.connect(self.cancel)
+        layout.addWidget(cancel_btn, 2, 0)
+        # warning
+        warning = pyqt_widgets.QLabel('Be patient, this might take a while.')
+        layout.addWidget(warning, 2, 1, 1, 2)
+        # done
+        self._done_btn = pyqt_widgets.QPushButton('Done')
+        self._done_btn.clicked.connect(sys.exit)
+        self._done_btn.setEnabled(False)
+        layout.addWidget(self._done_btn, 2, 4)
 
         logs.setLayout(layout)
         return logs
@@ -170,12 +190,27 @@ class SyaGui(pyqt_widgets.QMainWindow):
         del(self._options)
         del(self._ok_btn)
         self._logs.show()
-        threading.Thread(target=self.main, args=[self.args]).start()
+        self.start_main()
 
     def log(self, msg):
         cursor = self._logbox.textCursor()
-        cursor.movePosition(pyqt_gui.QTextCursor.End)
         cursor.insertText(msg)
         self._logbox.setTextCursor(cursor)
         self._logbox.ensureCursorVisible()
+
+    def start_main(self):
+        self.main_t = SyaGuiMain(self.fnSya, args=self.args)
+        self.check_t = SyaGuiMain(self._check_done)
+        self.main_t.start()
+        self.check_t.start()
+
+    def _check_done(self):
+        while self.main_t.isFinished() != True:
+            continue
+        self._done_btn.setEnabled(True)
+
+    def cancel(self):
+        self.main_t.exit()
+        self.check_t.exit()
+        sys.exit()
 

@@ -6,7 +6,6 @@ import subprocess
 import re
 import os
 import sys
-import threading
 # sya
 import gui
 # pip
@@ -61,10 +60,10 @@ def check_bin(*binaries):
             'Otherwise you can point to the binary using the relevant optional argument.')
 
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
-    log('{} getting {}, {} ({}) -> {}/{}.{}'.format(youtubedl, format, quality, url, outdir, os.path.basename(outdir), format))
-    cmd = [youtubedl, url, '--extract-audio', '--audio-format', format,
-        '--audio-quality', quality, '--prefer-ffmpeg', '-o',
-        '{}/{}.{}'.format(outdir, os.path.basename(outdir), format)]
+    log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
+    fname = '{}/{}'.format(outdir, os.path.basename(outdir), format)
+    cmd = [youtubedl, url, '--newline', '--extract-audio', '--audio-format', format,
+        '--audio-quality', quality, '--prefer-ffmpeg', '-o', fname + '.%(ext)s']
     if keep == True:
         cmd.append('-k')
     if ffmpeg != 'ffmpeg':
@@ -73,7 +72,7 @@ def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, f
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in iter(p.stdout.readline, b''):
         log(line.decode('utf-8').rstrip('\n'))
-    return './audio.mp3'
+    return '{}.{}'.format(fname, format)
 
 def load_tracklist(path):
     tracklist = []
@@ -127,7 +126,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
         log('\t{} ({} - {})'.format(outfile, t.timestamp, end))
-        cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error',
+        cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error', 
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
             '-acodec', 'copy', outfile]
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
