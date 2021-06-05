@@ -24,7 +24,7 @@ def log(msg):
 
 def error_exit(msg):
     log('exit failure "{}"'.format(msg))
-    exit()
+    sys.exit()
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -161,6 +161,6 @@ if __name__ == '__main__':
     if args.gui:
         app = pyqt_widgets.QApplication(sys.argv)
         options = gui.SyaGui(sya, args)
-        sys.exit(app.exec())
+        sys.exit(app.exec_())
     else:
         sya(args)
