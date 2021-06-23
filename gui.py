@@ -9,6 +9,14 @@ import PyQt5.QtCore as pyqt_core
 import PyQt5.QtWidgets as pyqt_widgets
 import PyQt5.QtGui as pyqt_gui
 
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    print(os.path.join(base_path, relative_path))
+    return os.path.join(base_path, relative_path)
+
 def centerWidget(widget):
     sg = pyqt_widgets.QDesktopWidget().screenGeometry()
     wg = widget.geometry()
@@ -127,7 +135,7 @@ class SyaGui(pyqt_widgets.QMainWindow):
             self._edits[labelText].setText(default)
         layout.addWidget(self._edits[labelText])
         # filepicker btn
-        button_logo = pyqt_gui.QIcon(os.path.dirname(__file__) + '/folder.png')
+        button_logo = pyqt_gui.QIcon(resource_path('folder.png'))
         button = pyqt_widgets.QPushButton(button_logo, '', widget)
         button.clicked.connect(filepickerFn)
         layout.addWidget(button)
