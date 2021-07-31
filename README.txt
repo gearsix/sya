@@ -64,8 +64,7 @@ TRACKLIST
 	✘ Spazzmatica Polka (1:26:01)
 
 INSTALL
-  If you'd like to install sya manually, then "cd" into the the sya directory
-  and run "sudo make install"
+  "sudo python ./setup.py install" or "python ./setup.py install --user"
 
 DISCLAIMER
   It should go without saying, don't use this for pirating music.
