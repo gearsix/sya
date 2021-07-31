@@ -77,7 +77,7 @@ TRACKLIST
 	Judd Madden - In Absence [5:02:05]
 
 INSTALL
-  If you'd like to use sya from the CLI, then "cd" into the the sya directory
+  If you'd like to install sya manually, then "cd" into the the sya directory
   and run "sudo make install"
   
 AUTHORS
