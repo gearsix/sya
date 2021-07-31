@@ -8,11 +8,12 @@ with open('README.txt', 'r') as f:
 
 setuptools.setup(
 	name='sya',
-	version='1.0.0',
+	version='0.7.0',
 	author='gearsix',
 	author_email='gearsix@tuta.io',
 	description=DESC,
         long_description=LONG_DESC,
+        long_description_content_type='text/plain',
 	url='https://notabug.org/gearsix/sya',
 	packages=setuptools.find_packages(),
 	classifiers=[
@@ -21,4 +22,5 @@ setuptools.setup(
 			'License :: Public Domain',
 			'Operating System :: OS Independent',
 	],
+        scripts=['sya.py']
 )
