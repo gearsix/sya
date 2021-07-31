@@ -6,10 +6,6 @@ import subprocess
 import re
 import os
 import sys
-# sya
-import gui
-# pip
-import PyQt5.QtWidgets as pyqt_widgets
 
 Timestamp = re.compile('[\[,\(]?(:?\d{1,2}){3}[\],\)]?')
 
@@ -47,8 +43,6 @@ def parse_args():
         help='path of the "ffmpeg" binary to use')
     parser.add_argument('-k', '--keep', action='store_true',
         help='keep any files removed during processing (full video/audio file)')
-    parser.add_argument('-g', '--gui', action='store_true',
-        help='run the gui for configuring options')
     return parser.parse_args()
 
 def check_bin(*binaries):
@@ -157,10 +151,4 @@ def sya(args):
     log('success')
 
 if __name__ == '__main__':
-    args = parse_args()
-    if args.gui:
-        app = pyqt_widgets.QApplication(sys.argv)
-        options = gui.SyaGui(sya, args)
-        sys.exit(app.exec_())
-    else:
-        sya(args)
+    sya(parse_args())
