@@ -7,7 +7,7 @@ import re
 import os
 import sys
 
-Timestamp = re.compile('[\[,\(]?(:?\d{1,2}){3}[\],\)]?')
+Timestamp = re.compile('[\[\(]?((\d+:)+(\d+))[\]\)]?')
 
 class TracklistItem:
     def __init__(self, timestamp, title):
