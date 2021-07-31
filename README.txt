@@ -30,56 +30,52 @@ TRACKLIST
   Of course, you don't have to put the timestamp first. sya will try and accomocodate
   whatever syntax is used, just beware that this might cause problems.
 
-  Here is an example:
+  Here's an example:
 
-	https://www.youtube.com/watch?v=ors0wpcVDcc
-	Los Natas - Brisa Del Desierto [00:00]
-	Sleeping Pandora - Through The Maze [02:05]
-	Fluidage - Feel Like I Do [12:43]
-	My Sleeping Karma - Psilocybe [18:11]
-	Daisy Pusher - While Wailing (Only a Part) [26:01]
-	The Whirlings - Worries on a Shelf [30:49]
-	Arenna - Move Through Figurehead Lights [36:28]
-	Ten East - Skyline Pressure [43:32]
-	Wooden Shjips - These Shadows [49:24]
-	King Buffalo - Orion Subsiding [54:48]
-	UFO Över Lappland - Nothing That Lives Has . . . . Such Eyes [1:00:18]
-	Papir - III.III [1:09:31]
-	Mirovia - Multiversum [1:14:24]
-	Quest For Fire - Strange Waves [1:23:32]
-	35007 - 22 25 & 61 74 [1:31:07]
-	Stoned Cobra - Black Spiral Dancer [1:39:39]
-	U.S. Christmas - Suzerain [1:48:09] 
-	Comacozer - BinBeal [1:56:53]
-	Kungens Män- Bortkopplad från tiden [2:14:52]
-	The Kings of Frog Island - Laid [2:35:03]
-	Sungrazer - Behind [2:37:44]
-	The Re-Stoned - Crystals [2:51:30]
-	Deepspacepilots - Space Ghost [3:00:51]
-	KR3TURE - Anthropocene [3:06:55]
-	Domo - Samsara [3:10:37]
-	KAMNI - Mandala [3:24:36]
-	Blaak Heat -  Shadows (The Beast Pt. Ii) [3:31:21]
-	Mick Clarke - Time Is Now [3:39:28]
-	Weedpecker - Nothingness [3:42:45]
-	Gypsy Sun Revival - Pisces [3:47:51]
-	Black Bombaim - Blow, Vanish #1 [4:02:37]
-	Colour Haze - Inside [4:05:10]
-	Sutrah - La marcha del cordero [4:12:27]
-	Sun of Man - Space [4:18:23]
-	Fatso Jetson - Seroquel [4:30:41]
-	Halma - Treadmill [4:37:15]
-	Sonora Ritual - Spring [4:44:59]
-	Causa Sui - Fichelscher Sun [4:49:16]
-	Folkvang - Ensamhetens Famn [4:51:27]
-	Graveyard - Longing [4:53:58]
-	Maha Sohona - Asteroids Part 2: Trajectory [4:58:45]
-	Judd Madden - In Absence [5:02:05]
+	https://www.youtube.com/watch?v=LbjcaMAhJRQ
+	✘ Sneaky Snitch (0:00)
+	✘ Fluffing a Duck (2:16)
+	✘ Cipher (3:24)
+	✘ Scheming Weasel (7:15)
+	✘ Carefree (8:44)
+	✘ Thatched Villagers (12:09)
+	✘ Monkeys Spinning Monkeys (16:15)
+	✘ Wallpaper (18:20)
+	✘ Pixel Peeker Polka (21:59)
+	✘ Killing Time (25:21)
+	✘ Hitman (28:46)
+	✘ The Cannery (32:07)
+	✘ Cut and Run (35:09)
+	✘ Life of Riley (38:44)
+	✘ Quirky Dog (42:39)
+	✘ The Complex (45:08)
+	✘ Hyperfun (49:35)
+	✘ Black Vortex (53:29)
+	✘ Rock on Chicago (56:19)
+	✘ Volatile Reaction (57:58)
+	✘ On the Ground (1:00:44)
+	✘ Wagon Wheel (electronic) (1:03:23)
+	✘ Call to Adventure (1:08:26)
+	✘ Hustle (1:12:33)
+	✘ Cupids Revenge (1:14:34)
+	✘ Dirt Rhodes (1:16:20)
+	✘ Rhinoceros (1:18:20)
+	✘ Who Likes to Party (1:21:43)
+	✘ Spazzmatica Polka (1:26:01)
 
 INSTALL
   If you'd like to install sya manually, then "cd" into the the sya directory
   and run "sudo make install"
-  
+
+DISCLAIMER
+  It should go without saying, don't use this for pirating music.
+  If you do, you're a dick and you're working against whatever band/label you
+  love enough to download their product.
+
+  Service like Bandcamp (https://bandcamp.com) are great and allow you download
+  audio files of the albums you've bought, properly tagged and available for
+  re-download whenever you need.
+
 AUTHORS
-  - gearsix <gearsix@tuta.io>
+  - gearsix (gearsix@tuta.io)
 
