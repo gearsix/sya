@@ -8,7 +8,7 @@ with open('README.txt', 'r') as f:
 
 setuptools.setup(
 	name='sya',
-	version='0.7.0',
+	version='0.8.0',
 	author='gearsix',
 	author_email='gearsix@tuta.io',
 	description=DESC,
@@ -22,5 +22,5 @@ setuptools.setup(
 			'License :: Public Domain',
 			'Operating System :: OS Independent',
 	],
-        scripts=['sya']
+        scripts=['sya', 'sya-pyqt']
 )
