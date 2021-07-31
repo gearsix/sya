@@ -22,5 +22,5 @@ setuptools.setup(
 			'License :: Public Domain',
 			'Operating System :: OS Independent',
 	],
-        scripts=['sya.py']
+        scripts=['sya']
 )
