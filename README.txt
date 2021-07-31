@@ -64,7 +64,12 @@ TRACKLIST
 	✘ Spazzmatica Polka (1:26:01)
 
 INSTALL
-  "sudo python ./setup.py install" or "python ./setup.py install --user"
+  "sudo python ./setup.py install --record install.txt" or
+  "python ./setup.py install --user --record install.txt"
+
+UNINSTALL
+  The 'install.txt' file from the install must be present.
+  "sudo rm $(cat install.txt)".
 
 DISCLAIMER
   It should go without saying, don't use this for pirating music.
