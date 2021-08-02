@@ -17,10 +17,9 @@ setuptools.setup(
 	url='https://notabug.org/gearsix/sya',
 	packages=setuptools.find_packages(),
 	classifiers=[
-			'Programming Language :: Python',
-			'Environment :: Console',
 			'License :: Public Domain',
+			'Programming Language :: Python',
 			'Operating System :: OS Independent',
 	],
-        scripts=['sya', 'sya-pyqt']
+        scripts=['sya.py', 'sya-pyqt.py']
 )
