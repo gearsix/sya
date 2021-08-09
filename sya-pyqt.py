@@ -21,7 +21,7 @@ def resource_path(relative_path):
 def centerWidget(widget):
     sg = qtwidg.QDesktopWidget().screenGeometry()
     wg = widget.geometry()
-    return qtcore.QPoint(sg.width() / 2 - wg.width() / 2, sg.height() / 2 - wg.height() / 2)   
+    return qtcore.QPoint(round(sg.width() / 2) - round(wg.width() / 2), round(sg.height() / 2) - round(wg.height() / 2))
 
 class LogStream(qtcore.QObject):
     txt = qtcore.pyqtSignal(str)
