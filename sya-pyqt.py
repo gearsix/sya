@@ -125,7 +125,7 @@ class SyaGui(qtwidg.QMainWindow):
         logs.setLayout(layout)
         return logs
 
-    def _init_filepicker(self, widget, labelText, filepickerFn, default=None):
+    def _init_filepicker(self, widget, labelText, filepickerFn, default=None, icon='folder'):
         layout = qtwidg.QHBoxLayout()
         # label
         label = qtwidg.QLabel(labelText, widget)
@@ -136,7 +136,7 @@ class SyaGui(qtwidg.QMainWindow):
             self._edits[labelText].setText(default)
         layout.addWidget(self._edits[labelText])
         # filepicker btn
-        button_logo = qtgui.QIcon(resource_path('folder.png'))
+        button_logo = qtgui.QIcon(resource_path('{}.png'.format(icon)))
         button = qtwidg.QPushButton(button_logo, '', widget)
         button.clicked.connect(filepickerFn)
         layout.addWidget(button)

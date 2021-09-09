@@ -73,11 +73,11 @@ BUILDING
   To do this 'pyinstaller' seems most convenient (installed via "pip
   install pyinstaller"):
 
-	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png:."
+	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png:file.png:."
 
   On Windows, you'll need to use the following:
 
-	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png;."
+	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png;file.png;."
 
   This process also works to create binaries for the terminal version
   of the tool (sya.py). When building that version, the "--windowed"
