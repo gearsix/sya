@@ -104,6 +104,13 @@ INSTALL
   contains all the files installed to your system. To uninstall using just
   remove all of these files.
 
+THANKS
+  These two tools do all the heavy lifting:
+  - youtube-dl (https://ytdl-org.github.io/youtube-dl/)
+  - ffmpeg (https://ffmpeg.org)
+
+  And the cool icons used are from the MicroMoon theme for Palemoon: 
+  https://repo.palemoon.org/Lootyhoof/micromoon
 
 DISCLAIMER
   It should go without saying, don't use this for pirating music.

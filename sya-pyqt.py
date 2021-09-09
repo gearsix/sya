@@ -84,7 +84,7 @@ class SyaGui(qtwidg.QMainWindow):
         if self.args.keep == True:
             keep.setChecked(True)
         keep.toggled.connect(self._keep_toggle, self.args.keep)
-        layout.addWidget(keep, 1, 1, 2, 1)
+        layout.addWidget(keep, 1, 2, 2, 1)
         # output
         self._outputLabel = 'Output:'
         layout.addLayout(self._init_filepicker(options, self._outputLabel, self._filepicker_output,
