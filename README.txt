@@ -73,11 +73,11 @@ BUILDING
   To do this 'pyinstaller' seems most convenient (installed via "pip
   install pyinstaller"):
 
-	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png:file.png:."
+	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png:." --add-data "file.png:."
 
   On Windows, you'll need to use the following:
 
-	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png;file.png;."
+	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png;." --add-data "file.png;."
 
   This process also works to create binaries for the terminal version
   of the tool (sya.py). When building that version, the "--windowed"
@@ -94,7 +94,7 @@ INSTALL
   Note that there are a lot of ways to install a python package from
   source, this is just one.
 
-	python ./setup.py install --user --record install.txt
+	python3 ./setup.py install --user --record install.txt
 
   The "--user" argument will only install sya for the current user. Remove
   it to install the tool to the system, although note that this will require

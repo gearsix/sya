@@ -11,6 +11,8 @@ import PyQt5.QtCore as qtcore
 import PyQt5.QtWidgets as qtwidg
 import PyQt5.QtGui as qtgui
 
+
+
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -70,7 +72,7 @@ class SyaGui(qtwidg.QMainWindow):
         # tracklist
         self._tracklistLabel = 'Tracklist:'
         layout.addLayout(self._init_filepicker(options, self._tracklistLabel,
-            self._filepicker_tracklist, self.args.tracklist), 0, 0, 1, 3)
+            self._filepicker_tracklist, self.args.tracklist, 'file'), 0, 0, 1, 3)
         # formats
         formats = ['mp3', 'flv', 'wav', 'ogg', 'aac']
         layout.addLayout(self._init_combobox(options, 'Format:', self._set_format, formats,
@@ -162,7 +164,7 @@ class SyaGui(qtwidg.QMainWindow):
     
     def _filepicker_tracklist(self, signal):
         file = qtwidg.QFileDialog.getOpenFileName(self._options,
-            'Select a tracklist', os.path.expanduser("~"), "Plain-Text file (*.txt)")
+            'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)")
         if len(file) > 0:
             self.args.tracklist = file[0]
             self._edits[self._tracklistLabel].setText(self.args.tracklist)
@@ -221,7 +223,6 @@ class SyaGui(qtwidg.QMainWindow):
     def cancel(self):
         self.main_t.exit()
         self.check_t.exit()
-        sys.exit()
 
 if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
