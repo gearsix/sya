@@ -164,7 +164,8 @@ class SyaGui(qtwidg.QMainWindow):
     
     def _filepicker_tracklist(self, signal):
         file = qtwidg.QFileDialog.getOpenFileName(self._options,
-            'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)")
+            'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)",
+            None, qtwidg.QFileDialog.DontUseNativeDialog)
         if len(file) > 0:
             self.args.tracklist = file[0]
             self._edits[self._tracklistLabel].setText(self.args.tracklist)
@@ -175,7 +176,8 @@ class SyaGui(qtwidg.QMainWindow):
 
     def _filepicker_output(self, signal):
         file = qtwidg.QFileDialog.getExistingDirectory(self._options,
-            'Select directory', os.path.expanduser('~'))
+            'Select directory', os.path.expanduser('~'),
+            qtwidg.QFileDialog.DontUseNativeDialog)
         if len(file) > 0:
             self.args.output = file
             self._edits[self._outputLabel].setText(file)
