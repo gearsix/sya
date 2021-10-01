@@ -50,8 +50,9 @@ def check_bin(*binaries):
         try:
             subprocess.call([b], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
         except:
-            print(b, 'failed to execute, check it exists in your $PATH.\n'
-            'Otherwise you can point to the binary using the relevant optional argument.')
+            error_exit('failed to execute {}'.format(b))
+            opy
+
 
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
     log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
@@ -103,12 +104,11 @@ def missing_times(tracks):
 
 def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
     log('splitting tracks...')
-    cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', 'audio.mp3',
-        '-f', 'null', '-']
-    ret = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    length = str(ret.stderr).split('\\r')
+    cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', audio_fpath, '-f', 'null', '-']
+    ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     # some nasty string manip. to extract length (printed to stderr)
     try:
+        length = str(ret).split('\\r')
         length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
     except:
         log('Failed to find track length, {}'.format(length))
