@@ -109,13 +109,13 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
     # some nasty string manip. to extract length (printed to stderr)
     try:
         length = str(ret).split('\\r')
-        length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+        length = length[len(length)-2].split(' ')[1].split('=')[1][:-3]
     except:
         log('Failed to find track length, {}'.format(length))
         return
-        
+    
     for i, t in enumerate(tracks):
-        outfile = '{}/{} - {}.{}'.format(outpath, str(i).zfill(2), t.title, format)
+        outfile = '{}/{} - {}.{}'.format(outpath, str(i).zfill(2), t.title.strip(' - '), format)
         end = length
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
