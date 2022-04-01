@@ -32,12 +32,12 @@ def parse_args():
     parser.add_argument('-o', '--output', metavar='PATH', type=str, nargs='?',
         help='specify the directory to write output files to (default: ./out)')
     parser.add_argument('-f', '--format', type=str, nargs='?', default='mp3',
-        help='specify the --audio-format argument to pass to youtube-dl (default: mp3)')
+        help='specify the --audio-format argument to pass to yt-dlp (default: mp3)')
     parser.add_argument('-q', '--quality', type=str, nargs='?', default='320K',
-        help='specify the --audio-quality argument to pass to youtube-dl (default: 320K)')
-    parser.add_argument('--youtube-dl', metavar='PATH', type=str, nargs='?',
-        default='youtube-dl', dest='youtubedl',
-        help='path of the "youtube-dl" binary to use')
+        help='specify the --audio-quality argument to pass to yt-dlp (default: 320K)')
+    parser.add_argument('--yt-dlp', metavar='PATH', type=str, nargs='?',
+        default='yt-dlp', dest='youtubedl',
+        help='path of the "yt-dlp" binary to use')
     parser.add_argument('--ffmpeg', metavar='PATH', type=str, nargs='?',
         default='ffmpeg', dest='ffmpeg',
         help='path of the "ffmpeg" binary to use')
