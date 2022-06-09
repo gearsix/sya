@@ -89,6 +89,7 @@ def parse_tracks(tracklist):
                 timestamp = l.strip('[()]')
                 sline.remove(l)
         title = ' '.join(sline).strip(' ')
+        title = title.replace('/', ',').replace('\\', ',').replace('"', ' ').replace('\'', ' ')
         if Timestamp.match(timestamp) == None:
             log('line {}, missing timestamp: "{}"'.format(lcount, line))
             timestamp = None
@@ -115,7 +116,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
         return
     
     for i, t in enumerate(tracks):
-        outfile = '{}/{} - {}.{}'.format(outpath, str(i).zfill(2), t.title.strip(' - '), format)
+        outfile = '{}/{} - {}.{}'.format(outpath, str(i+1).zfill(2), t.title.strip(' - '), format)
         end = length
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
