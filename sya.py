@@ -83,16 +83,18 @@ def parse_tracks(tracklist):
     tracks = []
     for lcount, line in enumerate(tracklist):
         sline = line.split(' ')
-        timestamp = sline[0]
-        for l in sline: # check line in case timestamp is in another element
+        
+        timestamp = None
+        for l in sline:
             if Timestamp.match(l):
                 timestamp = l.strip('[()]')
                 sline.remove(l)
-        title = ' '.join(sline).strip(' ')
-        title = title.replace('/', ',').replace('\\', ',').replace('"', ' ').replace('\'', ' ')
-        if Timestamp.match(timestamp) == None:
+        if timestamp == None:
             log('line {}, missing timestamp: "{}"'.format(lcount, line))
-            timestamp = None
+        
+        title = ' '.join(sline).strip(' ')
+        title = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", '', title)
+        
         tracks.append(TracklistItem(timestamp, title))
     return tracks
 
@@ -110,7 +112,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
     # some nasty string manip. to extract length (printed to stderr)
     try:
         length = str(ret).split('\\r')
-        length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+        length = length[len(length)-2].split(' ')[1].split('=')[1][:-3]
     except:
         log('Failed to find track length, {}'.format(length))
         return
@@ -149,7 +151,6 @@ def sya(args):
 
     os.makedirs(args.output, exist_ok=True)
     split_tracks(args.ffmpeg, audio_fpath, tracks, args.format, args.output)
-    log('success')
 
 if __name__ == '__main__':
     sya(parse_args())
