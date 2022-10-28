@@ -41,7 +41,7 @@ def parse_args():
     parser.add_argument('--ffmpeg', metavar='PATH', type=str, nargs='?',
         default='ffmpeg', dest='ffmpeg',
         help='path of the "ffmpeg" binary to use')
-    parser.add_argument('-k', '--keep', action='store_true',
+    parser.add_argument('-k', '--keep', action='store_false',
         help='keep any files removed during processing (full video/audio file)')
     return parser.parse_args()
 
@@ -112,7 +112,7 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
     # some nasty string manip. to extract length (printed to stderr)
     try:
         length = str(ret).split('\\r')
-        length = length[len(length)-2].split(' ')[1].split('=')[1][:-3]
+        length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
     except:
         log('Failed to find track length, {}'.format(length))
         return
