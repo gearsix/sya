@@ -24,8 +24,7 @@ def centerWidget(widget):
     wg = widget.geometry()
     return qtcore.QPoint(
         round(sg.width() / 2) - round(wg.width() / 2),
-        round(sg.height() / 2) - round(wg.height() / 2)
-    )
+        round(sg.height() / 2) - round(wg.height() / 2))
 
 class LogStream(qtcore.QObject):
     txt = qtcore.pyqtSignal(str)
@@ -118,7 +117,7 @@ class SyaGui(qtwidg.QMainWindow):
         cancel_btn.clicked.connect(self.cancel)
         layout.addWidget(cancel_btn, 2, 0)
         # warning
-        warning = qtwidg.QLabel('Be patient, this might take a while.')
+        warning = qtwidg.QLabel('Be patient, this might take a while. Click "Done" when finished.')
         layout.addWidget(warning, 2, 1, 1, 2)
         # done
         self._done_btn = qtwidg.QPushButton('Done')

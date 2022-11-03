@@ -14,36 +14,13 @@ class TracklistItem:
         self.timestamp = timestamp
         self.title = title
 
+# utilities
 def log(msg):
-    msg = 'sya: ' + msg
     print(msg)
 
 def error_exit(msg):
     log('exit failure "{}"'.format(msg))
     sys.exit()
-
-def parse_args():
-    parser = argparse.ArgumentParser(
-        description='download & split audio tracks long youtube videos')
-    # arguments
-    parser.add_argument('tracklist', metavar='TRACKLIST', nargs='?',
-        help='tracklist to split audio by')
-    # options
-    parser.add_argument('-o', '--output', metavar='PATH', type=str, nargs='?',
-        help='specify the directory to write output files to (default: ./out)')
-    parser.add_argument('-f', '--format', type=str, nargs='?', default='mp3',
-        help='specify the --audio-format argument to pass to yt-dlp (default: mp3)')
-    parser.add_argument('-q', '--quality', type=str, nargs='?', default='320K',
-        help='specify the --audio-quality argument to pass to yt-dlp (default: 320K)')
-    parser.add_argument('--yt-dlp', metavar='PATH', type=str, nargs='?',
-        default='yt-dlp', dest='youtubedl',
-        help='path of the "yt-dlp" binary to use')
-    parser.add_argument('--ffmpeg', metavar='PATH', type=str, nargs='?',
-        default='ffmpeg', dest='ffmpeg',
-        help='path of the "ffmpeg" binary to use')
-    parser.add_argument('-k', '--keep', action='store_false',
-        help='keep any files removed during processing (full video/audio file)')
-    return parser.parse_args()
 
 def check_bin(*binaries):
     for b in binaries:
@@ -51,9 +28,8 @@ def check_bin(*binaries):
             subprocess.call([b], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
         except:
             error_exit('failed to execute {}'.format(b))
-            opy
 
-
+# functions
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
     log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
     fname = '{}/{}'.format(outdir, os.path.basename(outdir), format)
@@ -131,8 +107,32 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
             log(line.decode('utf-8').rstrip('\n'))
     return
 
+# runtime
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description='download & split audio tracks long youtube videos')
+    # arguments
+    parser.add_argument('tracklist', metavar='TRACKLIST', nargs='?',
+        help='tracklist to split audio by')
+    # options
+    parser.add_argument('-o', '--output', metavar='PATH', type=str, nargs='?',
+        help='specify the directory to write output files to (default: ./out)')
+    parser.add_argument('-f', '--format', type=str, nargs='?', default='mp3',
+        help='specify the --audio-format argument to pass to yt-dlp (default: mp3)')
+    parser.add_argument('-q', '--quality', type=str, nargs='?', default='320K',
+        help='specify the --audio-quality argument to pass to yt-dlp (default: 320K)')
+    parser.add_argument('--yt-dlp', metavar='PATH', type=str, nargs='?',
+        default='yt-dlp', dest='youtubedl',
+        help='path of the "yt-dlp" binary to use')
+    parser.add_argument('--ffmpeg', metavar='PATH', type=str, nargs='?',
+        default='ffmpeg', dest='ffmpeg',
+        help='path of the "ffmpeg" binary to use')
+    parser.add_argument('-k', '--keep', action='store_true',
+        default=False,
+        help='keep any files removed during processing (full video/audio file)')
+    return parser.parse_args()
+
 def sya(args):
-    # validate args
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
     if args.tracklist == None or os.path.exists(args.tracklist) == False:
@@ -141,8 +141,10 @@ def sya(args):
         args.output = os.path.splitext(args.tracklist)[0]
 
     tracklist = load_tracklist(args.tracklist)
+    
     audio_fpath = get_audio(args.youtubedl, tracklist[0], args.output,
             args.format, args.quality, args.keep, args.ffmpeg)
+            
     tracks = parse_tracks(tracklist[1:])
 
     missing = missing_times(tracks)
@@ -151,6 +153,9 @@ def sya(args):
 
     os.makedirs(args.output, exist_ok=True)
     split_tracks(args.ffmpeg, audio_fpath, tracks, args.format, args.output)
+
+    if args.keep is False:
+        os.remove(audio_fpath)
 
 if __name__ == '__main__':
     sya(parse_args())
