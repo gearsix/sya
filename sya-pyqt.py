@@ -12,7 +12,6 @@ import PyQt5.QtWidgets as qtwidg
 import PyQt5.QtGui as qtgui
 
 
-
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
@@ -23,7 +22,10 @@ def resource_path(relative_path):
 def centerWidget(widget):
     sg = qtwidg.QDesktopWidget().screenGeometry()
     wg = widget.geometry()
-    return qtcore.QPoint(round(sg.width() / 2) - round(wg.width() / 2), round(sg.height() / 2) - round(wg.height() / 2))
+    return qtcore.QPoint(
+        round(sg.width() / 2) - round(wg.width() / 2),
+        round(sg.height() / 2) - round(wg.height() / 2)
+    )
 
 class LogStream(qtcore.QObject):
     txt = qtcore.pyqtSignal(str)
@@ -228,5 +230,6 @@ class SyaGui(qtwidg.QMainWindow):
 
 if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
-    options = SyaGui(sya, sya.parse_args())
+    gui = SyaGui(sya.sya, sya.parse_args())
     sys.exit(app.exec_())
+
