@@ -114,7 +114,7 @@ class SyaGui(qtwidg.QMainWindow):
         layout.addWidget(logbox, 1, 0, 1, 5)
         # cancel
         cancel_btn = qtwidg.QPushButton('Cancel')
-        cancel_btn.clicked.connect(self.cancel)
+        cancel_btn.clicked.connect(self._cancel)
         layout.addWidget(cancel_btn, 2, 0)
         # warning
         warning = qtwidg.QLabel('Be patient, this might take a while. Click "Done" when finished.')
@@ -201,8 +201,6 @@ class SyaGui(qtwidg.QMainWindow):
             self._ok_btn.setEnabled(False)
 
     def _ok(self):
-        del(self._options)
-        del(self._ok_btn)
         self._logs.show()
         self.start_main()
 
@@ -221,14 +219,25 @@ class SyaGui(qtwidg.QMainWindow):
     def _check_done(self):
         while self.main_t.isFinished() != True:
             continue
-        self._done_btn.setEnabled(True)
+        self._ok_btn.setEnabled(True)
+        self._options.setEnabled(False)
 
-    def cancel(self):
+    def _cancel(self):
         self.main_t.exit()
         self.check_t.exit()
+        os.removedirs(self.args.output)
+        del(self._logs)
 
 if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
     gui = SyaGui(sya.sya, sya.parse_args())
+    
+    if sys.platform == 'win32':
+        gui.args.youtubedl = resource_path('yt-dlp.exe')
+        gui.args.ffmpeg = resource_path('ffmpeg.exe')
+    else:
+        gui.args.youtubedl = resource_path('yt-dlp')
+        gui.args.ffmpeg = resource_path('ffmpeg')
+    
     sys.exit(app.exec_())
 
