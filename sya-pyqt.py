@@ -4,6 +4,7 @@
 import os
 import sys
 import subprocess
+import shutil
 # sya
 import sya
 # pip
@@ -225,7 +226,7 @@ class SyaGui(qtwidg.QMainWindow):
     def _cancel(self):
         self.main_t.exit()
         self.check_t.exit()
-        os.removedirs(self.args.output)
+        shutil.rmtree(self.args.output)
         del(self._logs)
 
 if __name__ == '__main__':
