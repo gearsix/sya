@@ -15,34 +15,29 @@ class TracklistItem:
         self.title = title
 
 # utilities
-def log(msg):
-    print(msg)
-
 def error_exit(msg):
-    log('exit failure "{}"'.format(msg))
+    print('exit failure "{}"'.format(msg))
     sys.exit()
 
 def check_bin(*binaries):
     for b in binaries:
         try:
-            subprocess.call([b], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+            subprocess.call([b], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, shell=True)
         except:
             error_exit('failed to execute {}'.format(b))
 
 # functions
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
-    log('{} getting {}, {} ({})'.format(youtubedl, format, quality, url))
+    print('Downloading {} ({}, {})...'.format(url, format, quality))
     fname = '{}/{}'.format(outdir, os.path.basename(outdir), format)
     cmd = [youtubedl, url, '--newline', '--extract-audio', '--audio-format', format,
-        '--audio-quality', quality, '--prefer-ffmpeg', '-o', fname + '.%(ext)s']
+        '--audio-quality', quality, '--prefer-ffmpeg', '--ffmpeg-location', ffmpeg,
+        '-o', fname + '.%(ext)s']
     if keep == True:
         cmd.append('-k')
-    if ffmpeg != 'ffmpeg':
-        cmd.append('--ffmpeg-location')
-        cmd.append(ffmpeg)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    for line in iter(p.stdout.readline, b''):
-        log(line.decode('utf-8').rstrip('\n'))
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    for line in p.stdout.readlines():
+        print('    {}'.format(line.decode('utf-8', errors='ignore').strip()))
     return '{}.{}'.format(fname, format)
 
 def load_tracklist(path):
@@ -66,7 +61,7 @@ def parse_tracks(tracklist):
                 timestamp = l.strip('[()]')
                 sline.remove(l)
         if timestamp == None:
-            log('line {}, missing timestamp: "{}"'.format(lcount, line))
+            print('line {}, missing timestamp: "{}"'.format(lcount, line))
         
         title = ' '.join(sline).strip(' ')
         title = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", '', title)
@@ -82,15 +77,18 @@ def missing_times(tracks):
     return missing
 
 def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
-    log('splitting tracks...')
+    print('Splitting...')
     cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', audio_fpath, '-f', 'null', '-']
-    ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
     # some nasty string manip. to extract length (printed to stderr)
     try:
         length = str(ret).split('\\r')
-        length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+        if sys.platform == 'win32':
+            length = length[len(length)-2].split(' ')[1].split('=')[1][:-3]
+        else:
+            length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
     except:
-        log('Failed to find track length, {}'.format(length))
+        print('Failed to find track length, {}'.format(length))
         return
     
     for i, t in enumerate(tracks):
@@ -98,13 +96,13 @@ def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
         end = length
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
-        log('\t{} ({} - {})'.format(outfile, t.timestamp, end))
+        print('     {} ({} - {})'.format(outfile, t.timestamp, end))
         cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error', 
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
             '-acodec', 'copy', outfile]
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        for line in iter(p.stdout.readline, b''):
-            log(line.decode('utf-8').rstrip('\n'))
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        for line in p.stdout.readlines():
+            print('    {}'.format(line.decode('utf-8', errors='ignore').strip()))
     return
 
 # runtime
@@ -141,6 +139,8 @@ def sya(args):
     
     audio_fpath = get_audio(args.youtubedl, tracklist[0], args.output,
             args.format, args.quality, args.keep, args.ffmpeg)
+    if os.path.exists(audio_fpath) == False:
+        error_exit('download failed, aborting')
             
     tracks = parse_tracks(tracklist[1:])
 
