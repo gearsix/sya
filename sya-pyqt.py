@@ -135,6 +135,8 @@ class SyaGui(qtwidg.QMainWindow):
     def done(self):
         self.loggerTextbox.clear()
         self.logger.hide()
+        self.set_tracklist('')
+        self.set_output('')
         
     def preMain(self):
         self.optionsOk.setEnabled(False)
@@ -193,6 +195,7 @@ class SyaGui(qtwidg.QMainWindow):
         
         self.options.setLayout(layout)
         self.options.setWindowTitle('sya (split youtube audio)')
+        self.options.setWindowIcon(qtgui.QIcon(resource_path('sya-smol.png')))
         self.options.move(center_widget(self.options))
         self.options.show()
 
@@ -226,7 +229,9 @@ class SyaGui(qtwidg.QMainWindow):
 
     # Options Callbacks
     def select_tracklist(self):
-        file = qtwidg.QFileDialog.getOpenFileName(self.options, 'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)", None, qtwidg.QFileDialog.DontUseNativeDialog)
+        dialog = qtwidg.QFileDialog()
+        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya-smol.png')))
+        file = dialog.getOpenFileName(self.options, 'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)", None, qtwidg.QFileDialog.DontUseNativeDialog)
         if len(file) > 0:
             self.set_tracklist(file[0])
 
@@ -237,7 +242,9 @@ class SyaGui(qtwidg.QMainWindow):
         self.update_options_ok()
 
     def select_output(self):
-        file = qtwidg.QFileDialog.getExistingDirectory(self.options, 'Select directory', os.path.expanduser('~'), qtwidg.QFileDialog.DontUseNativeDialog)
+        dialog = qtwidg.QFileDialog()
+        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya-smol.png')))
+        file = dialog.getExistingDirectory(self.options, 'Select directory', os.path.expanduser('~'), qtwidg.QFileDialog.DontUseNativeDialog)
         if len(file) > 0:
             self.set_output(file[0])
 
@@ -304,8 +311,10 @@ if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
     
     args = sya.parse_args()
-    args.tracklist = ''
-    args.output = ''
+    if args.tracklist is None:
+        args.tracklist = ''
+    if args.output is None:
+        args.output = ''
     args.youtubedl = resource_path('yt-dlp')
     args.ffmpeg = resource_path('ffmpeg')
     if sys.platform == 'win32':
