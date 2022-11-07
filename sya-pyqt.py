@@ -133,17 +133,17 @@ class SyaGui(qtwidg.QMainWindow):
         sys.exit()
         
     def done(self):
-        self.loggerTextbox.clear()
-        self.logger.hide()
         self.set_tracklist('')
         self.set_output('')
+        self.optionsOk.setEnabled(True)
+        self.logger.hide()
+        self.loggerTextbox.clear()
         
     def preMain(self):
         self.optionsOk.setEnabled(False)
         self.loggerDone.setEnabled(False)
         
     def postMain(self):
-        self.optionsOk.setEnabled(True)
         self.loggerDone.setEnabled(True)
 
     def main(self):
@@ -284,6 +284,7 @@ class SyaGui(qtwidg.QMainWindow):
         
         self.logger = qtwidg.QWidget()
         self.logger.setLayout(layout)
+        self.logger.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.logger.resize(800, 400)
         self.logger.move(center_widget(self.logger))
 
