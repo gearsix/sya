@@ -113,21 +113,32 @@ def parse_args():
     parser.add_argument('tracklist', metavar='TRACKLIST', nargs='?',
         help='tracklist to split audio by')
     # options
-    parser.add_argument('-o', '--output', metavar='PATH', type=str, nargs='?', dest='output',
+    parser.add_argument('-o', '--output',
+        metavar='PATH', type=str, nargs='?', dest='output',
         help='specify the directory to write output files to (default: ./out)')
-    parser.add_argument('-f', '--format', type=str, nargs='?', default='mp3', dest='format',
+    parser.add_argument('-f', '--format',
+        type=str, nargs='?', default='mp3', dest='format',
         help='specify the --audio-format argument to pass to yt-dlp (default: mp3)')
-    parser.add_argument('-q', '--quality', type=str, nargs='?', default='320K', dest='quality',
+    parser.add_argument('-q', '--quality',
+        type=str, nargs='?', default='320K', dest='quality',
         help='specify the --audio-quality argument to pass to yt-dlp (default: 320K)')
-    parser.add_argument('--yt-dlp', metavar='PATH', type=str, nargs='?', default='yt-dlp', dest='youtubedl',
+    parser.add_argument('--yt-dlp',
+        metavar='PATH', type=str, nargs='?', dest='youtubedl',
         help='path of the "yt-dlp" binary to use')
-    parser.add_argument('--ffmpeg', metavar='PATH', type=str, nargs='?', default='ffmpeg', dest='ffmpeg',
+    parser.add_argument('--ffmpeg',
+        metavar='PATH', type=str, nargs='?', dest='ffmpeg',
         help='path of the "ffmpeg" binary to use')
-    parser.add_argument('-k', '--keep', action='store_true', default=False, dest='keep',
+    parser.add_argument('-k', '--keep',
+        action='store_true', default=False, dest='keep',
         help='keep any files removed during processing (full video/audio file)')
     return parser.parse_args()
 
 def sya(args):
+    if args.youtubedl == None:
+        args.youtubedl = 'yt-dlp.exe' if sys.platform == 'win32' else 'yt-dlp'
+    if args.ffmpeg == None:
+        args.ffmpeg = 'ffmpeg.exe' if sys.platform == 'win32' else 'ffmpeg'
+
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
     if args.tracklist == None or os.path.exists(args.tracklist) == False:

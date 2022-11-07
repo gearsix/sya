@@ -110,9 +110,8 @@ class SyaGui(qtwidg.QMainWindow):
 
     # Runtime Methods        
     def log(self, msg):
-        cursor = self.loggerTextbox.textCursor()
-        cursor.insertText(msg)
-        self.loggerTextbox.setTextCursor(cursor)
+        self.loggerTextbox.moveCursor(qtgui.QTextCursor.End)
+        self.loggerTextbox.textCursor().insertText(msg)
         self.loggerTextbox.ensureCursorVisible()
 
     def cancel(self):
@@ -257,14 +256,17 @@ class SyaGui(qtwidg.QMainWindow):
         if option not in self.availableFormats:
             return
         self.optionsValue[self.formatLabel] = option
+        self.update_options_ok()
 
     def set_quality(self, option):
         if option not in self.availableQualities:
             return
         self.optionsValue[self.qualityLabel] = option
+        self.update_options_ok()
 
     def toggle_keep(self):
         self.optionsValue[self.keepLabel] = not self.optionsValue[self.keepLabel]
+        self.update_options_ok()
 
     def update_options_ok(self):
         tracklist = self.optionsValue[self.tracklistLabel]
@@ -316,11 +318,10 @@ if __name__ == '__main__':
         args.tracklist = ''
     if args.output is None:
         args.output = ''
-    args.youtubedl = resource_path('yt-dlp')
-    args.ffmpeg = resource_path('ffmpeg')
-    if sys.platform == 'win32':
-        args.youtubedl += '.exe'
-        args.ffmpeg += '.exe'
+    if args.youtubedl == None:
+        args.youtubedl = resource_path('yt-dlp') if sys.platform != 'win32' else resource_path('yt-dlp.exe')
+    if args.ffmpeg == None:
+        args.youtubedl = resource_path('ffmpeg') if sys.platform != 'win32' else resource_path('ffmpeg.exe')
     gui = SyaGui(sya.sya, args)
 
     sys.exit(app.exec_())
