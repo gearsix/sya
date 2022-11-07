@@ -1,12 +1,15 @@
 NAME
   sya - split youtube audio
 
+
 SYNOPSIS
   sya.py [OPTIONS] TRACKLIST
+
 
 DESCRIPTION
   sya downloads, converts and splits youtube videos into multiple audio
   tracks using `youtube-dl` and `ffmpeg`.
+
 
 OPTIONS
   -h --help		displays help message
@@ -21,9 +24,10 @@ OPTIONS
   -q, --quality [QUALITY]	
 	specify the --audio-quality argument to pass (default: 320K)
   --youtube-dl [PATH]	
-	path of the youtube-dl binary to use
+	path of the youtube-dl binary to use. Not available in 'sya-pyqt' binary.
   --ffmpeg [PATH]	
-	path of the ffmpeg binary to use
+	path of the ffmpeg binary to use. Not available in 'sya-pyqt' binary.
+
 
 TRACKLIST
   TRACKLIST files should be text file that has the URL/v=code of the youtube video to
@@ -67,50 +71,14 @@ TRACKLIST
 	Spazzmatica Polka (1:26:01)
 
 
-BUILDING
-  It's more convenient to build sya-pyqt into a single binary (bundled
-  with assets & libraries).
-  To do this 'pyinstaller' seems most convenient (installed via "pip
-  install pyinstaller"):
-
-	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png:." --add-data "file.png:."
-
-  On Windows, you'll need to use the following:
-
-	pyinstaller sya-pyqt.py -F --windowed --add-data "folder.png;." --add-data "file.png;."
-
-  This process also works to create binaries for the terminal version
-  of the tool (sya.py). When building that version, the "--windowed"
-  and "--add-data "folder.png:."" arguments don't need to be included.
-
-INSTALL
-  There are a lot of ways to install this tool.
-
-  For most cases, you can just download and run the distribution binaries.
-
-  FROM SOURCE	
-  This method should work on all platforms to install it for the current
-  user.
-  Note that there are a lot of ways to install a python package from
-  source, this is just one.
-
-	python3 ./setup.py install --user --record install.txt
-
-  The "--user" argument will only install sya for the current user. Remove
-  it to install the tool to the system, although note that this will require
-  admin permissions.
-
-  This will create a 'install.txt' file in the current directory. This file
-  contains all the files installed to your system. To uninstall using just
-  remove all of these files.
-
 THANKS
   These two tools do all the heavy lifting:
   - youtube-dl (https://ytdl-org.github.io/youtube-dl/)
   - ffmpeg (https://ffmpeg.org)
 
-  And the cool icons used are from the MicroMoon theme for Palemoon: 
+  And the cool folder & file icons used are from the Palemoon MicroMoon theme: 
   https://repo.palemoon.org/Lootyhoof/micromoon
+
 
 DISCLAIMER
   It should go without saying, don't use this for pirating music.
@@ -121,6 +89,6 @@ DISCLAIMER
   audio files of the albums you've bought, properly tagged and available for
   re-download whenever you need.
 
+
 AUTHORS
   - gearsix (gearsix@tuta.io)
-
