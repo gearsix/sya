@@ -195,7 +195,7 @@ class SyaGui(qtwidg.QMainWindow):
         
         self.options.setLayout(layout)
         self.options.setWindowTitle('sya (split youtube audio)')
-        self.options.setWindowIcon(qtgui.QIcon(resource_path('sya-smol.png')))
+        self.options.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.options.move(center_widget(self.options))
         self.options.show()
 
@@ -230,7 +230,7 @@ class SyaGui(qtwidg.QMainWindow):
     # Options Callbacks
     def select_tracklist(self):
         dialog = qtwidg.QFileDialog()
-        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya-smol.png')))
+        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         file = dialog.getOpenFileName(self.options, 'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)", None, qtwidg.QFileDialog.DontUseNativeDialog)
         if len(file) > 0:
             self.set_tracklist(file[0])
@@ -243,7 +243,7 @@ class SyaGui(qtwidg.QMainWindow):
 
     def select_output(self):
         dialog = qtwidg.QFileDialog()
-        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya-smol.png')))
+        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         file = dialog.getExistingDirectory(self.options, 'Select directory', os.path.expanduser('~'), qtwidg.QFileDialog.DontUseNativeDialog)
         if len(file) > 0:
             self.set_output(file[0])
