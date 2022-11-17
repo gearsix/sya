@@ -62,8 +62,7 @@ def sya_gui_combobox(parent, label, items, default_item, fn_update):
     layout = qtwidg.QHBoxLayout()
     layout.addWidget(label)
     layout.addWidget(combobox)
-    layout.setStretch(0, 2)
-    
+
     return layout
 
 
@@ -77,12 +76,12 @@ def sya_gui_filepicker(parent, label, fn_select, fn_update, default_value='', ic
     btnIcon = qtgui.QIcon(resource_path('{}.png'.format(icon)))
     btn = qtwidg.QPushButton(btnIcon, '', parent)
     btn.clicked.connect(fn_select)
-    
+
     layout = qtwidg.QHBoxLayout()
     layout.addWidget(label)
     layout.addWidget(lineEdit)
     layout.addWidget(btn)
-    
+
     return layout, lineEdit
 
 
@@ -99,7 +98,8 @@ class SyaGui(qtwidg.QMainWindow):
         self._init_options_value()
         self._init_options()
         self._init_logger()
-
+        
+        self.options.closeEvent = self.quit
         self.optionsQuit.clicked.connect(self.quit)
         self.optionsOk.clicked.connect(self.main)
         self.loggerCancel.clicked.connect(self.cancel)
@@ -108,7 +108,7 @@ class SyaGui(qtwidg.QMainWindow):
         sys.stdout = SyaGuiLogStream(txt=self.log)
         self.running = 0
 
-    # Runtime Methods        
+    # Runtime Methods
     def log(self, msg):
         self.loggerTextbox.moveCursor(qtgui.QTextCursor.End)
         self.loggerTextbox.textCursor().insertText(msg)
@@ -119,29 +119,28 @@ class SyaGui(qtwidg.QMainWindow):
             self.main_t.terminate()
             self.main_t.wait()
             self.running -= 1
-        if os.path.exists(self.fnSyaArgs.output):
-            shutil.rmtree(self.fnSyaArgs.output)
         self.logger.hide()
         self.loggerTextbox.clear()
 
-    def quit(self):
+    def quit(self, event):
+        sys.stdout = sys.__stdout__
         if self.running > 0:
             self.cancel()
-        del self.logger
-        del self.options
-        sys.exit()
-        
+        self.options.close()
+        self.logger.close()
+        self.close()
+
     def done(self):
         self.set_tracklist('')
         self.set_output('')
         self.optionsOk.setEnabled(True)
         self.logger.hide()
         self.loggerTextbox.clear()
-        
+
     def preMain(self):
         self.optionsOk.setEnabled(False)
         self.loggerDone.setEnabled(False)
-        
+
     def postMain(self):
         self.loggerDone.setEnabled(True)
 
@@ -151,13 +150,14 @@ class SyaGui(qtwidg.QMainWindow):
         self.fnSyaArgs.quality = self.optionsValue[self.qualityLabel]
         self.fnSyaArgs.keep = self.optionsValue[self.keepLabel]
         self.fnSyaArgs.output = self.optionsValue[self.outputLabel]
-        
+
         self.main_t = SyaGuiThread(self.fnSya, self.fnSyaArgs)
         self.main_t.started.connect(self.preMain)
         self.main_t.finished.connect(self.postMain)
-        
+
         self.logger.setWindowTitle(self.fnSyaArgs.output)
         self.logger.show()
+        self.running += 1
         self.main_t.start()
 
     # optionsValue
@@ -165,7 +165,7 @@ class SyaGui(qtwidg.QMainWindow):
         self.tracklistLabel = 'Tracklist:'
         self.formatLabel = 'Format:'
         self.qualityLabel = 'Quality:'
-        self.keepLabel = 'Keep unsplit audio file'
+        self.keepLabel = 'Keep unsplit file'
         self.outputLabel = 'Output:'
         self.optionsValue = {
             self.tracklistLabel: self.fnSyaArgs.tracklist,
@@ -180,22 +180,25 @@ class SyaGui(qtwidg.QMainWindow):
         self.options = qtwidg.QWidget()
         self.optionsOk = qtwidg.QPushButton('OK')
         self.optionsQuit = qtwidg.QPushButton('Quit')
-        
+
         layout = qtwidg.QGridLayout()
         layout.addLayout(self._init_options_tracklist(), 0, 0, 1, 3)
         layout.addLayout(self._init_options_format(), 1, 0)
         layout.addLayout(self._init_options_quality(), 2, 0)
         layout.addLayout(self._init_options_output(), 3, 0, 1, 3)
         layout.addWidget(self._init_options_keep(), 1, 2, 2, 1)
-        layout.addWidget(self.optionsQuit, 4, 1)
+        layout.addWidget(self.optionsQuit, 4, 0)
         layout.addWidget(self.optionsOk, 4, 2)
         
-        self.update_options_ok()
-        
-        self.options.setLayout(layout)
         self.options.setWindowTitle('sya (split youtube audio)')
         self.options.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.options.move(center_widget(self.options))
+        self.options.setFixedHeight(169)
+        self.options.setFixedWidth(400)
+        self.options.setSizePolicy(qtwidg.QSizePolicy.Fixed, qtwidg.QSizePolicy.Fixed)
+        self.options.setLayout(layout)
+
+        self.update_options_ok()
         self.options.show()
 
     def _init_options_tracklist(self):
@@ -213,6 +216,11 @@ class SyaGui(qtwidg.QMainWindow):
         self.optionsQuality = sya_gui_combobox(self.options, label, self.availableQualities, self.optionsValue[label], self.set_quality)
         return self.optionsQuality
 
+    def _init_options_output(self):
+        label = self.tracklistLabel
+        layout, self.optionsOutput = sya_gui_filepicker(self.options, label, self.select_output, self.set_output, self.optionsValue[label], 'folder')
+        return layout
+
     def _init_options_keep(self):
         label = self.keepLabel
         self.optionsKeep = qtwidg.QCheckBox(label, self.options)
@@ -220,11 +228,6 @@ class SyaGui(qtwidg.QMainWindow):
             self.optionsKeep.setChecked(True)
         self.optionsKeep.toggled.connect(self.toggle_keep)
         return self.optionsKeep
-
-    def _init_options_output(self):
-        label = self.tracklistLabel
-        layout, self.optionsOutput = sya_gui_filepicker(self.options, label, self.select_output, self.set_output, self.optionsValue[label], 'folder')
-        return layout
 
     # Options Callbacks
     def select_tracklist(self):
@@ -283,7 +286,7 @@ class SyaGui(qtwidg.QMainWindow):
         layout.addWidget(self._init_logger_cancel(), 2, 0)
         layout.addWidget(self._init_logger_warning(), 2, 1, 1, 2)
         layout.addWidget(self._init_logger_done(), 2, 4)
-        
+
         self.logger = qtwidg.QWidget()
         self.logger.setLayout(layout)
         self.logger.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
@@ -312,7 +315,7 @@ class SyaGui(qtwidg.QMainWindow):
 # Main
 if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
-    
+
     args = sya.parse_args()
     if args.tracklist is None:
         args.tracklist = ''
