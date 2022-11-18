@@ -50,6 +50,7 @@ Regex is used to parse the tracks (timestamp and name), it tries to be fairly ac
 
 <details>
 	<summary>Example Tracklist</summary>
+	<pre>
 	https://www.youtube.com/watch?v=LbjcaMAhJRQ
 	Sneaky Snitch (0:00)
 	Fluffing a Duck (2:16)
@@ -80,6 +81,7 @@ Regex is used to parse the tracks (timestamp and name), it tries to be fairly ac
 	Rhinoceros (1:18:20)
 	Who Likes to Party (1:21:43)
 	Spazzmatica Polka (1:26:01)
+	</pre>
 </details>
 
 ### Install
@@ -98,7 +100,7 @@ To **uninstall**, just remove all files recorded to *./install.txt*.
 
 Some people don't like the cli and I wanted to play with PyQt, so sya-pyqt wraps a nice GUI around the *sya.py* runtime.
 
-![sya-pyqt_screenshot.png]
+![screenshot](screenshot.png "sya-pyqt on Windows)
 
 ### Development
 
@@ -112,16 +114,19 @@ To run *sya-pyqt*, you don't need to build a binary everytime, you can just run 
 
 **POSIX (Linux, MacOS, BSD)**
 
-	pyinstaller ./sya-pyqt.py -F --windowed --add-data "./folder.png:." --add-data "./file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
+	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\HELP.md;." --add-data "./folder.png:." --add-data "./file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
 
 **Windows**
 
-	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\folder.png;." --add-data ".\file.png;." --add-data ".\sya.png;." --add-data "$FFMPEG;." --add-data "$YT-DLP;."
+	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\HELP.md;." --add-data ".\folder.png;." --add-data ".\file.png;." --add-data ".\sya.png;." --add-data "$FFMPEG;." --add-data "$YT-DLP;."
 
 - Make sure you have a *yt-dlp* binary available, the filepath of this is referred to as *$YT-DLP*.
 - Make sure you have a *ffmpeg* binary available, the filepath of this is referred to as *$FFMPEG*.
 - In some cases, I've found the path of PyQt5 has had to be explicitly given to *pyinstaller*:
 `--path <site-packages filepath>\PyQt5`
+
+Optionally, you can add an icon to the binary, I'd recommend installing [Pillow](https://python-pillow.org/) so you don't need to manually convert `sya.png` to an icon file. Just add `--icon "sya.png"` to the build command.
+
 
 ---
 
