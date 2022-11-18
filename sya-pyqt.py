@@ -92,7 +92,7 @@ class SyaGui(qtwidg.QMainWindow):
         self.fnSya = fn_sya
         self.fnSyaArgs = fn_sya_args
 
-        self.availableFormats = ['mp3', 'flv', 'wav', 'ogg', 'aac']
+        self.availableFormats = ['mp3', 'wav', 'ogg', 'aac']
         self.availableQualities = ['0 (better)', '1', '2', '3', '4', '5', '6', '7', '8', '9 (worse)']
 
         self._init_options_value()
