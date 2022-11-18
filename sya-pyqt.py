@@ -192,7 +192,7 @@ class SyaGui(qtwidg.QMainWindow):
         
         self.options.setWindowTitle('sya (split youtube audio)')
         self.options.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        self.options.move(center_widget(self.options))
+        #self.options.move(center_widget(self.options))
         self.options.setFixedHeight(169)
         self.options.setFixedWidth(400)
         self.options.setSizePolicy(qtwidg.QSizePolicy.Fixed, qtwidg.QSizePolicy.Fixed)
@@ -291,11 +291,12 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.setLayout(layout)
         self.logger.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.logger.resize(800, 400)
-        self.logger.move(center_widget(self.logger))
+        #self.logger.move(center_widget(self.logger))
 
     def _init_logger_textbox(self):
         self.loggerTextbox = qtwidg.QPlainTextEdit()
         self.loggerTextbox.setReadOnly(True)
+        self.loggerTextbox.setLineWrapMode(qtwidg.QPlainTextEdit.NoWrap)
         return self.loggerTextbox
 
     def _init_logger_cancel(self):
@@ -321,10 +322,10 @@ if __name__ == '__main__':
         args.tracklist = ''
     if args.output is None:
         args.output = ''
-    if args.youtubedl == None:
+    if args.youtubedl is None:
         args.youtubedl = resource_path('yt-dlp') if sys.platform != 'win32' else resource_path('yt-dlp.exe')
-    if args.ffmpeg == None:
-        args.youtubedl = resource_path('ffmpeg') if sys.platform != 'win32' else resource_path('ffmpeg.exe')
+    if args.ffmpeg is None:
+        args.ffmpeg = resource_path('ffmpeg') if sys.platform != 'win32' else resource_path('ffmpeg.exe')
     gui = SyaGui(sya.sya, args)
 
     sys.exit(app.exec_())
