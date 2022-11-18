@@ -217,7 +217,7 @@ class SyaGui(qtwidg.QMainWindow):
         return self.optionsQuality
 
     def _init_options_output(self):
-        label = self.tracklistLabel
+        label = self.outputLabel
         layout, self.optionsOutput = sya_gui_filepicker(self.options, label, self.select_output, self.set_output, self.optionsValue[label], 'folder')
         return layout
 
