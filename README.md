@@ -112,14 +112,14 @@ To run *sya-pyqt*, you don't need to build a binary everytime, you can just run 
 
 **POSIX (Linux, MacOS, BSD)**
 
-	pyinstaller ./sya-pyqt.py -F --windowed --add-data "./folder.png:." --add-data "./file.png:." --add-data "./sya.png:." --add-data "FFMPEG:." --add-data "YT-DLP:."
+	pyinstaller ./sya-pyqt.py -F --windowed --add-data "./folder.png:." --add-data "./file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
 
 **Windows**
 
-	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\folder.png;." --add-data ".\file.png;." --add-data ".\sya.png;." --add-data "FFMPEG;." --add-data "YT-DLP;."
+	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\folder.png;." --add-data ".\file.png;." --add-data ".\sya.png;." --add-data "$FFMPEG;." --add-data "$YT-DLP;."
 
-- Make sure you have a *yt-dlp* binary available, the filepath of this is referred to as *YT-DLP*.
-- Make sure you have a *ffmpeg* binary available, the filepath of this is referred to as *FFMPEG*.
+- Make sure you have a *yt-dlp* binary available, the filepath of this is referred to as *$YT-DLP*.
+- Make sure you have a *ffmpeg* binary available, the filepath of this is referred to as *$FFMPEG*.
 - In some cases, I've found the path of PyQt5 has had to be explicitly given to *pyinstaller*:
 `--path <site-packages filepath>\PyQt5`
 
