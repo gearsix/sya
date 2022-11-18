@@ -97,11 +97,13 @@ class SyaGui(qtwidg.QMainWindow):
 
         self._init_options_value()
         self._init_options()
+        self._init_help()
         self._init_logger()
         
         self.options.closeEvent = self.quit
-        self.optionsQuit.clicked.connect(self.quit)
+        self.optionsHelp.clicked.connect(self.show_help)
         self.optionsOk.clicked.connect(self.main)
+        self.help.closeEvent = self.help.hide()
         self.loggerCancel.clicked.connect(self.cancel)
         self.loggerDone.clicked.connect(self.done)
 
@@ -136,6 +138,9 @@ class SyaGui(qtwidg.QMainWindow):
         self.optionsOk.setEnabled(True)
         self.logger.hide()
         self.loggerTextbox.clear()
+    
+    def show_help(self):
+        self.help.show()
 
     def preMain(self):
         self.optionsOk.setEnabled(False)
@@ -179,7 +184,7 @@ class SyaGui(qtwidg.QMainWindow):
     def _init_options(self):
         self.options = qtwidg.QWidget()
         self.optionsOk = qtwidg.QPushButton('OK')
-        self.optionsQuit = qtwidg.QPushButton('Quit')
+        self.optionsHelp = qtwidg.QPushButton('Help')
 
         layout = qtwidg.QGridLayout()
         layout.addLayout(self._init_options_tracklist(), 0, 0, 1, 3)
@@ -187,7 +192,7 @@ class SyaGui(qtwidg.QMainWindow):
         layout.addLayout(self._init_options_quality(), 2, 0)
         layout.addLayout(self._init_options_output(), 3, 0, 1, 3)
         layout.addWidget(self._init_options_keep(), 1, 2, 2, 1)
-        layout.addWidget(self.optionsQuit, 4, 0)
+        layout.addWidget(self.optionsHelp, 4, 0)
         layout.addWidget(self.optionsOk, 4, 2)
         
         self.options.setWindowTitle('sya (split youtube audio)')
@@ -278,6 +283,16 @@ class SyaGui(qtwidg.QMainWindow):
             self.optionsOk.setEnabled(True)
         else:
             self.optionsOk.setEnabled(False)
+
+    # Help Widget
+    def _init_help(self):
+        self.help = qtwidg.QTextEdit()
+        with open(resource_path("HELP.md")) as f:
+            self.help.setMarkdown(f.read())
+        self.help.resize(500, 500)
+        self.help.move(self.options.x() + self.options.width() + 10, self.options.y() - 150)
+        self.help.setReadOnly(True)
+        return
 
     # Logger Widget
     def _init_logger(self):
