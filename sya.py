@@ -30,12 +30,13 @@ def check_bin(*binaries):
 def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
     print('Downloading {} ({}, {})...'.format(url, format, quality))
     fname = '{}/{}'.format(outdir, os.path.basename(outdir), format)
-    cmd = [youtubedl, url, '--newline', '--extract-audio', '--audio-format', format,
+    cmd = [youtubedl, '--newline', '--extract-audio', '--audio-format', format,
         '--audio-quality', quality, '--prefer-ffmpeg', '--ffmpeg-location', ffmpeg,
         '-o', fname + '.%(ext)s']
     if keep == True:
         cmd.append('-k')
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+    cmd.append(url)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in p.stdout.readlines():
         print('    {}'.format(line.decode('utf-8', errors='ignore').strip()))
     return '{}.{}'.format(fname, format)
@@ -76,31 +77,34 @@ def missing_times(tracks):
             missing.append(i)
     return missing
 
-def split_tracks(ffmpeg, audio_fpath, tracks, format='mp3', outpath='out'):
-    print('Splitting...')
-    cmd = ['ffmpeg', '-v', 'quiet', '-stats', '-i', audio_fpath, '-f', 'null', '-']
-    ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-    # some nasty string manip. to extract length (printed to stderr)
+def read_tracklen(ffmpeg, track_fpath):
+    cmd = [ffmpeg, '-v', 'quiet', '-stats', '-i', track_fpath, '-f', 'null', '-']
+    length = '00:00'
     try:
+        ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         length = str(ret).split('\\r')
+        # some nasty string manip. to extract length (printed to stderr)
         if sys.platform == 'win32':
             length = length[len(length)-2].split(' ')[1].split('=')[1][:-3]
         else:
             length = length[len(length)-1].split(' ')[1].split('=')[1][:-3]
+        print('Track length: {}'.format(length))
     except:
-        print('Failed to find track length, {}'.format(length))
-        return
-    
+        error_exit('Failed to find track length, aborting.')
+    return length
+
+def split_tracks(ffmpeg, audio_fpath, audio_len, tracks, format='mp3', outpath='out'):    
+    print('Splitting...')
     for i, t in enumerate(tracks):
         outfile = '{}/{} - {}.{}'.format(outpath, str(i+1).zfill(2), t.title.strip(' - '), format)
-        end = length
+        end = audio_len
         if i < len(tracks)-1:
             end = tracks[i+1].timestamp
         print('     {} ({} - {})'.format(outfile, t.timestamp, end))
         cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error', 
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
             '-acodec', 'copy', outfile]
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         for line in p.stdout.readlines():
             print('    {}'.format(line.decode('utf-8', errors='ignore').strip()))
     return
@@ -152,18 +156,22 @@ def sya(args):
             args.format, args.quality, args.keep, args.ffmpeg)
     if os.path.exists(audio_fpath) == False:
         error_exit('download failed, aborting')
-            
-    tracks = parse_tracks(tracklist[1:])
 
+    
+    tracks = parse_tracks(tracklist[1:])
+    
     missing = missing_times(tracks)
     if len(missing) > 0:
         error_exit('some tracks are missing timestamps')
 
+    length = read_tracklen(args.ffmpeg, audio_fpath)
     os.makedirs(args.output, exist_ok=True)
-    split_tracks(args.ffmpeg, audio_fpath, tracks, args.format, args.output)
+    split_tracks(args.ffmpeg, audio_fpath, length, tracks, args.format, args.output)
 
     if args.keep is False:
         os.remove(audio_fpath)
+
+    print('Success')
 
 if __name__ == '__main__':
     sya(parse_args())
