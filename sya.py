@@ -7,7 +7,6 @@ import re
 import os
 import sys
 
-Shell = False if sys.platform is "win32" else True
 Timestamp = re.compile('[\[\(]?((\d+:)+(\d+))[\]\)]?')
 
 class TracklistItem:
@@ -23,7 +22,7 @@ def error_exit(msg):
 def check_bin(*binaries):
     for b in binaries:
         try:
-            subprocess.call([b], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, shell=Shell)
+            subprocess.call([b], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL, shell=False)
         except:
             error_exit('failed to execute {}'.format(b))
 
@@ -37,7 +36,7 @@ def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, f
     if keep == True:
         cmd.append('-k')
     cmd.append(url)
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=Shell)
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
     for line in p.stdout.readlines():
         print('    {}'.format(line.decode('utf-8', errors='ignore').strip()))
     return '{}.{}'.format(fname, format)
@@ -54,13 +53,22 @@ def load_tracklist(path):
 
 def parse_tracks(tracklist):
     tracks = []
+    weightR = 0 # num. timestamps on right-side
+    weightL = 0 # num. timestamps on left-side
     for lcount, line in enumerate(tracklist):
         sline = line.split(' ')
         
         timestamp = None
-        for l in sline:
-            if Timestamp.match(l):
-                timestamp = l.strip('[()]')
+        for i, l in enumerate(sline):
+            if i != 0 and i != len(sline)-1:
+                continue
+            elif Timestamp.match(l):
+                if timestamp == None or weightR > weightL:
+                    timestamp = l.strip('[()]')
+                if i == 0:
+                    weightL += 1
+                else:
+                    weightR += 1
                 sline.remove(l)
         if timestamp == None:
             print('line {}, missing timestamp: "{}"'.format(lcount, line))
@@ -82,7 +90,7 @@ def read_tracklen(ffmpeg, track_fpath):
     cmd = [ffmpeg, '-v', 'quiet', '-stats', '-i', track_fpath, '-f', 'null', '-']
     length = '00:00'
     try:
-        ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=Shell)
+        ret = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=False)
         length = str(ret).split('\\r')
         # some nasty string manip. to extract length (printed to stderr)
         if sys.platform == 'win32':
@@ -105,7 +113,7 @@ def split_tracks(ffmpeg, audio_fpath, audio_len, tracks, format='mp3', outpath='
         cmd = ['ffmpeg', '-nostdin', '-y', '-loglevel', 'error', 
             '-i', audio_fpath, '-ss', t.timestamp, '-to', end,
             '-acodec', 'copy', outfile]
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=Shell)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=False)
         for line in p.stdout.readlines():
             print('    {}'.format(line.decode('utf-8', errors='ignore').strip()))
     return
