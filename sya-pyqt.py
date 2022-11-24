@@ -103,7 +103,7 @@ class SyaGui(qtwidg.QMainWindow):
         self.options.closeEvent = self.quit
         self.optionsHelp.clicked.connect(self.show_help)
         self.optionsOk.clicked.connect(self.main)
-        self.help.closeEvent = self.help.hide()
+        self.help.closeEvent = self.hide_help
         self.loggerCancel.clicked.connect(self.cancel)
         self.loggerDone.clicked.connect(self.done)
 
@@ -140,7 +140,15 @@ class SyaGui(qtwidg.QMainWindow):
         self.loggerTextbox.clear()
     
     def show_help(self):
+        x = self.options.x() - self.options.width() - 50
+        y = self.options.y() - self.options.height()
+        self.help.move(x, y)
         self.help.show()
+        self.optionsHelp.setEnabled(False)
+
+    def hide_help(self, signal):
+        self.help.hide()
+        self.optionsHelp.setEnabled(True)
 
     def preMain(self):
         self.optionsOk.setEnabled(False)
@@ -190,18 +198,15 @@ class SyaGui(qtwidg.QMainWindow):
         layout.addLayout(self._init_options_tracklist(), 0, 0, 1, 3)
         layout.addLayout(self._init_options_format(), 1, 0)
         layout.addLayout(self._init_options_quality(), 2, 0)
-        layout.addLayout(self._init_options_output(), 3, 0, 1, 3)
+        layout.addItem(qtwidg.QSpacerItem(int(self.options.width()/4), 0, qtwidg.QSizePolicy.Expanding, qtwidg.QSizePolicy.Expanding))
         layout.addWidget(self._init_options_keep(), 1, 2, 2, 1)
+        layout.addLayout(self._init_options_output(), 3, 0, 1, 3)
         layout.addWidget(self.optionsHelp, 4, 0)
         layout.addWidget(self.optionsOk, 4, 2)
         
+        self.options.setLayout(layout)
         self.options.setWindowTitle('sya (split youtube audio)')
         self.options.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        #self.options.move(center_widget(self.options))
-        self.options.setFixedHeight(169)
-        self.options.setFixedWidth(400)
-        self.options.setSizePolicy(qtwidg.QSizePolicy.Fixed, qtwidg.QSizePolicy.Fixed)
-        self.options.setLayout(layout)
 
         self.update_options_ok()
         self.options.show()
@@ -290,7 +295,6 @@ class SyaGui(qtwidg.QMainWindow):
         with open(resource_path("HELP.md")) as f:
             self.help.setMarkdown(f.read())
         self.help.resize(500, 500)
-        self.help.move(self.options.x() + self.options.width() + 10, self.options.y() - 150)
         self.help.setReadOnly(True)
         return
 
@@ -306,7 +310,6 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.setLayout(layout)
         self.logger.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.logger.resize(800, 400)
-        #self.logger.move(center_widget(self.logger))
 
     def _init_logger_textbox(self):
         self.loggerTextbox = qtwidg.QPlainTextEdit()
