@@ -46,8 +46,7 @@ def load_tracklist(path):
     tracklist_file = open(path, mode = 'r')
     for t in tracklist_file.readlines():
         t = t.strip('\n\t ')
-        if len(t) > 0:
-            tracklist.append(t)
+        tracklist.append(t)
     tracklist_file.close()
     return tracklist
 
@@ -123,8 +122,10 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='download & split audio tracks long youtube videos')
     # arguments
+    parser.add_argument('url', metavar='URL', nargs='?',
+        help='url of the video to extract audio from')
     parser.add_argument('tracklist', metavar='TRACKLIST', nargs='?',
-        help='tracklist to split audio by')
+        help='tracklist of title and timestamp information to split audio by')
     # options
     parser.add_argument('-o', '--output',
         metavar='PATH', type=str, nargs='?', dest='output',
@@ -154,6 +155,8 @@ def sya(args):
 
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
+    if args.url == None:
+        error_exit('missing url')
     if args.tracklist == None or os.path.exists(args.tracklist) == False:
         error_exit('missing tracklist')
     if args.output == None:
@@ -161,14 +164,13 @@ def sya(args):
 
     tracklist = load_tracklist(args.tracklist)
     
-    audio_fpath = get_audio(args.youtubedl, tracklist[0], args.output,
+    audio_fpath = get_audio(args.youtubedl, args.url, args.output,
             args.format, args.quality, args.keep, args.ffmpeg)
     if os.path.exists(audio_fpath) == False:
         error_exit('download failed, aborting')
 
     
-    tracks = parse_tracks(tracklist[1:])
-    
+    tracks = parse_tracks(tracklist)
     missing = missing_times(tracks)
     if len(missing) > 0:
         error_exit('some tracks are missing timestamps')
