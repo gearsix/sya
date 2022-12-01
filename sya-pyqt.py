@@ -140,7 +140,7 @@ class SyaGui(qtwidg.QMainWindow):
         self.loggerTextbox.clear()
     
     def show_help(self):
-        x = self.options.x() - self.options.width() - 50
+        x = self.options.x() - self.options.width() - 100
         y = self.options.y() - self.options.height()
         self.help.move(x, y)
         self.help.show()
@@ -151,6 +151,10 @@ class SyaGui(qtwidg.QMainWindow):
         self.optionsHelp.setEnabled(True)
 
     def preMain(self):
+        x = self.options.x() + self.options.width() + 50
+        y = self.options.y() - self.options.height()
+        self.logger.move(x, y)
+        self.logger.setWindowTitle('sya {}'.format(self.fnSyaArgs.output))
         self.optionsOk.setEnabled(False)
         self.loggerDone.setEnabled(False)
 
@@ -168,7 +172,6 @@ class SyaGui(qtwidg.QMainWindow):
         self.main_t.started.connect(self.preMain)
         self.main_t.finished.connect(self.postMain)
 
-        self.logger.setWindowTitle(self.fnSyaArgs.output)
         self.logger.show()
         self.running += 1
         self.main_t.start()
@@ -229,6 +232,8 @@ class SyaGui(qtwidg.QMainWindow):
     def _init_options_output(self):
         label = self.outputLabel
         layout, self.optionsOutput = sya_gui_filepicker(self.options, label, self.select_output, self.set_output, self.optionsValue[label], 'folder')
+        if self.optionsValue[self.tracklistLabel] != None and self.optionsValue[self.tracklistLabel] != '':
+            self.set_output(os.path.splitext(self.optionsValue[self.tracklistLabel])[0])
         return layout
 
     def _init_options_keep(self):
@@ -292,6 +297,8 @@ class SyaGui(qtwidg.QMainWindow):
     # Help Widget
     def _init_help(self):
         self.help = qtwidg.QTextEdit()
+        self.help.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
+        self.help.setWindowTitle('sya help')
         with open(resource_path("HELP.md")) as f:
             self.help.setMarkdown(f.read())
         self.help.resize(500, 500)
