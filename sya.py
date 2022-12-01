@@ -9,6 +9,8 @@ import sys
 
 Version = 'v1.0.1'
 
+UnsafeFilenameChars = re.compile('[/\\?%*:|\"<>\x7F\x00-\x1F]')
+TrackNum = re.compile('(?:\d+.? ?-? ?)')
 Timestamp = re.compile('(?:[\t ]+?)?[\[\(]+?((\d+[:.])+(\d+))[\]\)]?(?:[\t ]+)?')
 
 class TracklistItem:
@@ -75,8 +77,9 @@ def parse_tracks(tracklist):
         if timestamp == None:
             print('line {}, missing timestamp: "{}"'.format(lcount, line))
         
-        title = ' '.join(sline).strip(' ')
-        title = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", '', title)
+        line = ' '.join(sline)
+        line = re.sub(TrackNum, '', line)
+        title = re.sub(UnsafeFilenameChars, '', line)
         
         tracks.append(TracklistItem(timestamp, title))
     return tracks
