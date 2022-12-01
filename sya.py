@@ -7,7 +7,11 @@ import re
 import os
 import sys
 
-Timestamp = re.compile('[\[\(]?((\d+:)+(\d+))[\]\)]?')
+Version = 'v1.0.1'
+
+UnsafeFilenameChars = re.compile('[/\\?%*:|\"<>\x7F\x00-\x1F]')
+TrackNum = re.compile('(?:\d+.? ?-? ?)')
+Timestamp = re.compile('(?:[\t ]+?)?[\[\(]+?((\d+[:.])+(\d+))[\]\)]?(?:[\t ]+)?')
 
 class TracklistItem:
     def __init__(self, timestamp, title):
@@ -63,7 +67,7 @@ def parse_tracks(tracklist):
                 continue
             elif Timestamp.match(l):
                 if timestamp == None or weightR > weightL:
-                    timestamp = l.strip('[()]')
+                    timestamp = l.strip(' \t[()]')
                 if i == 0:
                     weightL += 1
                 else:
@@ -72,8 +76,9 @@ def parse_tracks(tracklist):
         if timestamp == None:
             print('line {}, missing timestamp: "{}"'.format(lcount, line))
         
-        title = ' '.join(sline).strip(' ')
-        title = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", '', title)
+        line = ' '.join(sline)
+        line = re.sub(TrackNum, '', line)
+        title = re.sub(UnsafeFilenameChars, '', line)
         
         tracks.append(TracklistItem(timestamp, title))
     return tracks
@@ -170,7 +175,8 @@ def sya(args):
         error_exit('download failed, aborting')
 
     
-    tracks = parse_tracks(tracklist)
+    tracks = parse_tracks(tracklist[1:])
+    
     missing = missing_times(tracks)
     if len(missing) > 0:
         error_exit('some tracks are missing timestamps')

@@ -12,7 +12,9 @@
 
 ---
 
-**2021-07-31** [ ] don't apply file numbering when song names include file number already
+**2021-07-31** [*] don't apply file numbering when song names include file number already
+
+	- Instead file numbering is just removed from track titles using regex.
 
 	#regex-improvement
 
