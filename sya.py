@@ -7,7 +7,9 @@ import re
 import os
 import sys
 
-Timestamp = re.compile('[\[\(]?((\d+:)+(\d+))[\]\)]?')
+Version = 'v1.0.1'
+
+Timestamp = re.compile('(?:[\t ]+?)?[\[\(]+?((\d+[:.])+(\d+))[\]\)]?(?:[\t ]+)?')
 
 class TracklistItem:
     def __init__(self, timestamp, title):
@@ -64,7 +66,7 @@ def parse_tracks(tracklist):
                 continue
             elif Timestamp.match(l):
                 if timestamp == None or weightR > weightL:
-                    timestamp = l.strip('[()]')
+                    timestamp = l.strip(' \t[()]')
                 if i == 0:
                     weightL += 1
                 else:
