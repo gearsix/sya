@@ -16,7 +16,7 @@ import PyQt5.QtGui as qtgui
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
-    except Exception:
+    except ValueError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
@@ -60,10 +60,10 @@ def new_filepicker(parent, fn_select, fn_update, default_value='', icon=''):
 
 
 class SyaGuiThread(qtcore.QThread):
-    def __init__(self, fn, args=None):
+    def __init__(self, fn, fn_args=None):
         super().__init__()
         self.fn = fn
-        self.args = args
+        self.args = fn_args
 
     def run(self):
         if self.args is None:
@@ -226,48 +226,92 @@ class SyaGuiHelp(qtwidg.QTextEdit):
 
     def show(self):
         self.move(self.options.x() - self.options.width() - 100, self.options.y() - self.options.height())
-        super().show()
         self.options.help.setEnabled(False)
+        super().show()
 
     def hide(self, signal):
-        super().hide()
         self.options.help.setEnabled(True)
+        super().hide()
+
+
+class SyaGuiLogger(qtwidg.QWidget):
+    def __init__(self):
+        super().__init__()
+        self._layout = qtwidg.QGridLayout()
+        self.textbox = self._init_textbox()
+        self.cancel = self._init_cancel()
+        self.warning = self._init_warning()
+        self.done = self._init_done()
+        self.setLayout(self._layout)
+
+        self.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
+        self.resize(800, 400)
+
+    def _init_textbox(self):
+        textbox = qtwidg.QPlainTextEdit()
+        textbox.setReadOnly(True)
+        textbox.setLineWrapMode(qtwidg.QPlainTextEdit.NoWrap)
+        self._layout.addWidget(textbox, 1, 0, 1, 5)
+        return textbox
+
+    def _init_cancel(self):
+        btn = qtwidg.QPushButton('Cancel')
+        self._layout.addWidget(btn, 2, 0)
+        return btn
+
+    def _init_warning(self):
+        label = qtwidg.QLabel('This might take a while. You can click "Done" when it\'s finished.')
+        self._layout.addWidget(label, 2, 1, 1, 2)
+        return label
+
+    def _init_done(self):
+        btn = qtwidg.QPushButton('Done')
+        btn.setEnabled(False)
+        self._layout.addWidget(btn, 2, 4)
+        return btn
+
+    def log(self, message):
+        self.textbox.moveCursor(qtgui.QTextCursor.End)
+        self.textbox.textCursor().insertText(message)
+        self.textbox.ensureCursorVisible()
+
+    def hide(self):
+        self.textbox.clear()
+        super().hide()
 
 
 class SyaGui(qtwidg.QMainWindow):
     def __init__(self, fn_sya, fn_sya_args):
         super().__init__()
 
+        # sya runtime
         self.fnSya = fn_sya
         self.fnSyaArgs = fn_sya_args
 
+        self.main_t = SyaGuiThread(self.fnSya, self.fnSyaArgs)
+        self.running = 0
+
+        # gui elements
         self.options = SyaGuiOptions(self.fnSyaArgs)
         self.help = SyaGuiHelp(self.options)
+        self.logger = SyaGuiLogger()
 
+        # gui hooks
         self.options.closeEvent = self.quit
         self.options.help.clicked.connect(self.help.show)
         self.options.ok.clicked.connect(self.main)
+
         self.help.closeEvent = self.help.hide
 
-        self._init_logger()
-        self.loggerCancel.clicked.connect(self.cancel)
-        self.loggerDone.clicked.connect(self.done)
-
-        sys.stdout = SyaGuiLogStream(txt=self.log)
-        self.running = 0
+        self.logger.cancel.clicked.connect(self.cancel)
+        self.logger.done.clicked.connect(self.done)
+        sys.stdout = SyaGuiLogStream(txt=self.logger.log)
 
     # runtime Methods
-    def log(self, msg):
-        self.loggerTextbox.moveCursor(qtgui.QTextCursor.End)
-        self.loggerTextbox.textCursor().insertText(msg)
-        self.loggerTextbox.ensureCursorVisible()
-
     def quit(self, event):
         sys.stdout = sys.__stdout__
-        if self.running > 0:
+        while self.running > 0:
             self.cancel()
-        self.options.close()
-        self.logger.close()
         self.close()
 
     def cancel(self):
@@ -276,26 +320,24 @@ class SyaGui(qtwidg.QMainWindow):
             self.main_t.wait()
             self.running -= 1
         self.logger.hide()
-        self.loggerTextbox.clear()
 
     def done(self):
-        self.set_tracklist('')
-        self.set_output('')
-        self.optionsOk.setEnabled(True)
+        self.options.set_tracklist('')
+        self.options.set_output('')
+        self.options.ok.setEnabled(True)
         self.logger.hide()
-        self.loggerTextbox.clear()
 
     # main runtime functions that call 'sya.py'
-    def preMain(self):
+    def pre_main(self):
         x = self.options.x() + self.options.width() + 50
         y = self.options.y() - self.options.height()
         self.logger.move(x, y)
         self.logger.setWindowTitle('sya {}'.format(self.fnSyaArgs.output))
         self.options.ok.setEnabled(False)
-        self.loggerDone.setEnabled(False)
+        self.logger.done.setEnabled(False)
 
-    def postMain(self):
-        self.loggerDone.setEnabled(True)
+    def post_main(self):
+        self.logger.done.setEnabled(True)
 
     def main(self):
         self.fnSyaArgs.tracklist = self.options.values['tracklist']
@@ -304,45 +346,12 @@ class SyaGui(qtwidg.QMainWindow):
         self.fnSyaArgs.keep = self.options.values['keep']
         self.fnSyaArgs.output = self.options.values['output']
 
-        self.main_t = SyaGuiThread(self.fnSya, self.fnSyaArgs)
-        self.main_t.started.connect(self.preMain)
-        self.main_t.finished.connect(self.postMain)
+        self.main_t.started.connect(self.pre_main)
+        self.main_t.finished.connect(self.post_main)
 
         self.logger.show()
         self.running += 1
         self.main_t.start()
-
-    # Logger Widget
-    def _init_logger(self):
-        layout = qtwidg.QGridLayout()
-        layout.addWidget(self._init_logger_textbox(), 1, 0, 1, 5)
-        layout.addWidget(self._init_logger_cancel(), 2, 0)
-        layout.addWidget(self._init_logger_warning(), 2, 1, 1, 2)
-        layout.addWidget(self._init_logger_done(), 2, 4)
-
-        self.logger = qtwidg.QWidget()
-        self.logger.setLayout(layout)
-        self.logger.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        self.logger.resize(800, 400)
-
-    def _init_logger_textbox(self):
-        self.loggerTextbox = qtwidg.QPlainTextEdit()
-        self.loggerTextbox.setReadOnly(True)
-        self.loggerTextbox.setLineWrapMode(qtwidg.QPlainTextEdit.NoWrap)
-        return self.loggerTextbox
-
-    def _init_logger_cancel(self):
-        self.loggerCancel = qtwidg.QPushButton('Cancel')
-        return self.loggerCancel
-
-    @staticmethod
-    def _init_logger_warning():
-        return qtwidg.QLabel('This might take a while. You can click "Done" when it\'s finished.')
-
-    def _init_logger_done(self):
-        self.loggerDone = qtwidg.QPushButton('Done')
-        self.loggerDone.setEnabled(False)
-        return self.loggerDone
 
 
 # Main
