@@ -29,6 +29,36 @@ def center_widget(widget):
         round(sg.height() / 2) - round(wg.height() / 2))
 
 
+def new_combobox(parent, items, default_item, fn_update):
+    combobox = qtwidg.QComboBox(parent)
+    for i in items:
+        combobox.addItem(i)
+    if default_item in items:
+        combobox.setCurrentIndex(items.index(default_item))
+    combobox.activated[str].connect(fn_update)
+
+    layout = qtwidg.QHBoxLayout()
+    layout.addWidget(combobox)
+
+    return layout
+
+
+def new_filepicker(parent, fn_select, fn_update, default_value='', icon=''):
+    line_edit = qtwidg.QLineEdit(parent)
+    line_edit.setText(default_value)
+    line_edit.textChanged.connect(fn_update)
+
+    btn_icon = qtgui.QIcon(resource_path('{}.png'.format(icon)))
+    btn = qtwidg.QPushButton(btn_icon, '', parent)
+    btn.clicked.connect(fn_select)
+
+    layout = qtwidg.QHBoxLayout()
+    layout.addWidget(line_edit)
+    layout.addWidget(btn)
+
+    return layout, line_edit
+
+
 class SyaGuiThread(qtcore.QThread):
     def __init__(self, fn, args=None):
         super().__init__()
@@ -49,40 +79,138 @@ class SyaGuiLogStream(qtcore.QObject):
         self.txt.emit(str(txt))
 
 
-def sya_gui_combobox(parent, label, items, default_item, fn_update):
-    label = qtwidg.QLabel(label, parent)
+class SyaGuiOptions(qtwidg.QWidget):
+    def __init__(self, init_values):
+        super().__init__()
+        self.labels = {
+            'tracklist': 'Tracklist:',
+            'format': 'Format:',
+            'quality': 'Quality:',
+            'keep': 'Keep unsplit file',
+            'output': 'Output:'}
+        self.values = {
+            'tracklist': init_values.tracklist,
+            'format': init_values.format,
+            'quality': init_values.quality,
+            'keep': init_values.keep,
+            'output': init_values.output}
 
-    combobox = qtwidg.QComboBox(parent)
-    for i in items:
-        combobox.addItem(i)
-    if default_item in items:
-        combobox.setCurrentIndex(items.index(default_item))
-    combobox.activated[str].connect(fn_update)
+        self.availableFormats = ['mp3', 'wav', 'ogg', 'aac']
+        self.availableQualities = ['0 (better)', '1', '2', '3', '4', '5', '6', '7', '8', '9 (worse)']
 
-    layout = qtwidg.QHBoxLayout()
-    layout.addWidget(label)
-    layout.addWidget(combobox)
+        self._layout = qtwidg.QGridLayout()
+        self.tracklist = self._init_tracklist()
+        self.format = self._init_format()
+        self.quality = self._init_quality()
+        self._init_spacer()
+        self.keep = self._init_keep()
+        self.output = self._init_output()
+        self.help = self._init_help()
+        self.ok = self._init_ok()
+        self.setLayout(self._layout)
 
-    return layout
+        self.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
+        self.setWindowTitle('sya (split youtube audio)')
+        self.setFixedSize(int(self.width() / 1.5), self.minimumHeight())
+        self.show()
 
+    def _init_tracklist(self):
+        label = self.labels['tracklist']
+        self._layout.addWidget(qtwidg.QLabel(label, self), 0, 0, 1, 3)
+        layout, line_edit = new_filepicker(self, self.select_tracklist, self.set_tracklist, self.values['tracklist'],
+                                           'file')
+        self._layout.addLayout(layout, 0, 1, 1, 3)
+        return line_edit
 
-def sya_gui_filepicker(parent, label, fn_select, fn_update, default_value='', icon=''):
-    label = qtwidg.QLabel(label, parent)
+    def _init_format(self):
+        label = self.labels['format']
+        self._layout.addWidget(qtwidg.QLabel(label, self), 1, 0)
+        combo_box = new_combobox(self, self.availableFormats, self.values['format'], self.set_format)
+        self._layout.addLayout(combo_box, 1, 1)
+        return combo_box
 
-    lineEdit = qtwidg.QLineEdit(parent)
-    lineEdit.setText(default_value)
-    lineEdit.textChanged.connect(fn_update)
+    def _init_quality(self):
+        label = self.labels['quality']
+        self._layout.addWidget(qtwidg.QLabel(label, self), 2, 0)
+        combo_box = new_combobox(self, self.availableQualities, self.values['quality'], self.set_quality)
+        self._layout.addLayout(combo_box, 2, 1)
+        return combo_box
 
-    btnIcon = qtgui.QIcon(resource_path('{}.png'.format(icon)))
-    btn = qtwidg.QPushButton(btnIcon, '', parent)
-    btn.clicked.connect(fn_select)
+    def _init_spacer(self):
+        size_policy = qtwidg.QSizePolicy.Expanding
+        spacer = qtwidg.QSpacerItem(int(self.width() / 4), 0, size_policy, size_policy)
+        self._layout.addItem(spacer)
 
-    layout = qtwidg.QHBoxLayout()
-    layout.addWidget(label)
-    layout.addWidget(lineEdit)
-    layout.addWidget(btn)
+    def _init_keep(self):
+        label = self.labels['keep']
+        checkbox = qtwidg.QCheckBox(label, self)
+        if self.values['keep']:
+            checkbox.setChecked(True)
+        self._layout.addWidget(checkbox, 1, 3, 2, 1)
+        checkbox.toggled.connect(self.toggle_keep)
+        return checkbox
 
-    return layout, lineEdit
+    def _init_output(self):
+        label = self.labels['output']
+        self._layout.addWidget(qtwidg.QLabel(label, self), 3, 0)
+        layout, line_edit = new_filepicker(self, self.select_output, self.set_output, self.values['output'], 'folder')
+        self._layout.addLayout(layout, 3, 1, 1, 3)
+        return line_edit
+
+    def _init_help(self):
+        btn = qtwidg.QPushButton('Help')
+        self._layout.addWidget(btn, 4, 0)
+        return btn
+
+    def _init_ok(self):
+        btn = qtwidg.QPushButton('OK')
+        self._layout.addWidget(btn, 4, 3)
+        return btn
+
+    # callbacks
+    def select_tracklist(self):
+        dialog = qtwidg.QFileDialog()
+        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
+        file = dialog.getOpenFileName(self, 'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)", None,
+                                      qtwidg.QFileDialog.DontUseNativeDialog)
+        if len(file) > 0:
+            self.set_tracklist(file[0])
+
+    def set_tracklist(self, text):
+        self.values['tracklist'] = text
+        self.tracklist.setText(text)
+        self.set_output(os.path.splitext(text)[0])
+        self.update_ok()
+
+    def select_output(self):
+        dialog = qtwidg.QFileDialog()
+        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
+        file = dialog.getExistingDirectory(self, 'Select directory', os.path.expanduser('~'),
+                                           qtwidg.QFileDialog.DontUseNativeDialog)
+        if len(file) > 0:
+            self.set_output(file)
+
+    def set_output(self, text):
+        self.values['output'] = text
+        self.output.setText(text)
+        self.update_ok()
+
+    def set_format(self, option):
+        if option in self.availableFormats:
+            self.values['format'] = option
+            self.update_ok()
+
+    def set_quality(self, option):
+        if option in self.availableQualities:
+            self.values['quality'] = option
+            self.update_ok()
+
+    def toggle_keep(self):
+        self.values['keep'] = not self.values['keep']
+        self.update_ok()
+
+    def update_ok(self):
+        self.ok.setEnabled(os.path.exists(self.values['tracklist']) and len(self.values['output']) > 0)
 
 
 class SyaGui(qtwidg.QMainWindow):
@@ -92,37 +220,26 @@ class SyaGui(qtwidg.QMainWindow):
         self.fnSya = fn_sya
         self.fnSyaArgs = fn_sya_args
 
-        self.availableFormats = ['mp3', 'wav', 'ogg', 'aac']
-        self.availableQualities = ['0 (better)', '1', '2', '3', '4', '5', '6', '7', '8', '9 (worse)']
-
-        self._init_options_value()
-        self._init_options()
         self._init_help()
         self._init_logger()
-        
+
+        self.options = SyaGuiOptions(self.fnSyaArgs)
         self.options.closeEvent = self.quit
-        self.optionsHelp.clicked.connect(self.show_help)
-        self.optionsOk.clicked.connect(self.main)
+        self.options.help.clicked.connect(self.show_help)
+        self.options.ok.clicked.connect(self.main)
+
         self.help.closeEvent = self.hide_help
         self.loggerCancel.clicked.connect(self.cancel)
         self.loggerDone.clicked.connect(self.done)
 
-        sys.stdout = SyaGuiLogStream(txt=self.log)
+        sys.stdout = SyaGuiLogStream(self.log)
         self.running = 0
 
-    # Runtime Methods
+    # runtime Methods
     def log(self, msg):
         self.loggerTextbox.moveCursor(qtgui.QTextCursor.End)
         self.loggerTextbox.textCursor().insertText(msg)
         self.loggerTextbox.ensureCursorVisible()
-
-    def cancel(self):
-        if self.running > 0:
-            self.main_t.terminate()
-            self.main_t.wait()
-            self.running -= 1
-        self.logger.hide()
-        self.loggerTextbox.clear()
 
     def quit(self, event):
         sys.stdout = sys.__stdout__
@@ -132,41 +249,39 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.close()
         self.close()
 
+    def cancel(self):
+        if self.running > 0:
+            self.main_t.terminate()
+            self.main_t.wait()
+            self.running -= 1
+        self.logger.hide()
+        self.loggerTextbox.clear()
+
     def done(self):
         self.set_tracklist('')
         self.set_output('')
         self.optionsOk.setEnabled(True)
         self.logger.hide()
         self.loggerTextbox.clear()
-    
-    def show_help(self):
-        x = self.options.x() - self.options.width() - 100
-        y = self.options.y() - self.options.height()
-        self.help.move(x, y)
-        self.help.show()
-        self.optionsHelp.setEnabled(False)
 
-    def hide_help(self, signal):
-        self.help.hide()
-        self.optionsHelp.setEnabled(True)
-
+    # main runtime functions that call 'sya.py'
     def preMain(self):
         x = self.options.x() + self.options.width() + 50
         y = self.options.y() - self.options.height()
         self.logger.move(x, y)
         self.logger.setWindowTitle('sya {}'.format(self.fnSyaArgs.output))
-        self.optionsOk.setEnabled(False)
+        self.options.ok.setEnabled(False)
         self.loggerDone.setEnabled(False)
 
     def postMain(self):
         self.loggerDone.setEnabled(True)
 
     def main(self):
-        self.fnSyaArgs.tracklist = self.optionsValue[self.tracklistLabel]
-        self.fnSyaArgs.format = self.optionsValue[self.formatLabel]
-        self.fnSyaArgs.quality = self.optionsValue[self.qualityLabel]
-        self.fnSyaArgs.keep = self.optionsValue[self.keepLabel]
-        self.fnSyaArgs.output = self.optionsValue[self.outputLabel]
+        self.fnSyaArgs.tracklist = self.options.values['tracklist']
+        self.fnSyaArgs.format = self.options.values['format']
+        self.fnSyaArgs.quality = self.options.values['quality']
+        self.fnSyaArgs.keep = self.options.values['keep']
+        self.fnSyaArgs.output = self.options.values['output']
 
         self.main_t = SyaGuiThread(self.fnSya, self.fnSyaArgs)
         self.main_t.started.connect(self.preMain)
@@ -176,123 +291,16 @@ class SyaGui(qtwidg.QMainWindow):
         self.running += 1
         self.main_t.start()
 
-    # optionsValue
-    def _init_options_value(self):
-        self.tracklistLabel = 'Tracklist:'
-        self.formatLabel = 'Format:'
-        self.qualityLabel = 'Quality:'
-        self.keepLabel = 'Keep unsplit file'
-        self.outputLabel = 'Output:'
-        self.optionsValue = {
-            self.tracklistLabel: self.fnSyaArgs.tracklist,
-            self.formatLabel: self.fnSyaArgs.format,
-            self.qualityLabel: self.fnSyaArgs.quality,
-            self.keepLabel: self.fnSyaArgs.keep,
-            self.outputLabel: self.fnSyaArgs.output
-        }
+    def show_help(self):
+        x = self.options.x() - self.options.width() - 100
+        y = self.options.y() - self.options.height()
+        self.help.move(x, y)
+        self.help.show()
+        self.options.help.setEnabled(False)
 
-    # options
-    def _init_options(self):
-        self.options = qtwidg.QWidget()
-        self.optionsOk = qtwidg.QPushButton('OK')
-        self.optionsHelp = qtwidg.QPushButton('Help')
-
-        layout = qtwidg.QGridLayout()
-        layout.addLayout(self._init_options_tracklist(), 0, 0, 1, 3)
-        layout.addLayout(self._init_options_format(), 1, 0)
-        layout.addLayout(self._init_options_quality(), 2, 0)
-        layout.addItem(qtwidg.QSpacerItem(int(self.options.width()/4), 0, qtwidg.QSizePolicy.Expanding, qtwidg.QSizePolicy.Expanding))
-        layout.addWidget(self._init_options_keep(), 1, 2, 2, 1)
-        layout.addLayout(self._init_options_output(), 3, 0, 1, 3)
-        layout.addWidget(self.optionsHelp, 4, 0)
-        layout.addWidget(self.optionsOk, 4, 2)
-        
-        self.options.setLayout(layout)
-        self.options.setWindowTitle('sya (split youtube audio)')
-        self.options.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-
-        self.update_options_ok()
-        self.options.show()
-
-    def _init_options_tracklist(self):
-        label = self.tracklistLabel
-        layout, self.optionsTracklist = sya_gui_filepicker(self.options, label, self.select_tracklist, self.set_tracklist, self.optionsValue[label], 'file')
-        return layout
-
-    def _init_options_format(self):
-        label = self.formatLabel
-        self.optionsFormat = sya_gui_combobox(self.options, label, self.availableFormats, self.optionsValue[label], self.set_format)
-        return self.optionsFormat
-
-    def _init_options_quality(self):
-        label = self.qualityLabel
-        self.optionsQuality = sya_gui_combobox(self.options, label, self.availableQualities, self.optionsValue[label], self.set_quality)
-        return self.optionsQuality
-
-    def _init_options_output(self):
-        label = self.outputLabel
-        layout, self.optionsOutput = sya_gui_filepicker(self.options, label, self.select_output, self.set_output, self.optionsValue[label], 'folder')
-        if self.optionsValue[self.tracklistLabel] != None and self.optionsValue[self.tracklistLabel] != '':
-            self.set_output(os.path.splitext(self.optionsValue[self.tracklistLabel])[0])
-        return layout
-
-    def _init_options_keep(self):
-        label = self.keepLabel
-        self.optionsKeep = qtwidg.QCheckBox(label, self.options)
-        if self.optionsValue[label]:
-            self.optionsKeep.setChecked(True)
-        self.optionsKeep.toggled.connect(self.toggle_keep)
-        return self.optionsKeep
-
-    # Options Callbacks
-    def select_tracklist(self):
-        dialog = qtwidg.QFileDialog()
-        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        file = dialog.getOpenFileName(self.options, 'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)", None, qtwidg.QFileDialog.DontUseNativeDialog)
-        if len(file) > 0:
-            self.set_tracklist(file[0])
-
-    def set_tracklist(self, text):
-        self.optionsValue[self.tracklistLabel] = text
-        self.optionsTracklist.setText(text)
-        self.set_output(os.path.splitext(text)[0])
-        self.update_options_ok()
-
-    def select_output(self):
-        dialog = qtwidg.QFileDialog()
-        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        file = dialog.getExistingDirectory(self.options, 'Select directory', os.path.expanduser('~'), qtwidg.QFileDialog.DontUseNativeDialog)
-        if len(file) > 0:
-            self.set_output(file[0])
-
-    def set_output(self, text):
-        self.optionsValue[self.outputLabel] = text
-        self.optionsOutput.setText(text)
-        self.update_options_ok()
-
-    def set_format(self, option):
-        if option not in self.availableFormats:
-            return
-        self.optionsValue[self.formatLabel] = option
-        self.update_options_ok()
-
-    def set_quality(self, option):
-        if option not in self.availableQualities:
-            return
-        self.optionsValue[self.qualityLabel] = option
-        self.update_options_ok()
-
-    def toggle_keep(self):
-        self.optionsValue[self.keepLabel] = not self.optionsValue[self.keepLabel]
-        self.update_options_ok()
-
-    def update_options_ok(self):
-        tracklist = self.optionsValue[self.tracklistLabel]
-        output = self.optionsValue[self.outputLabel]
-        if os.path.exists(tracklist) and len(output) > 0:
-            self.optionsOk.setEnabled(True)
-        else:
-            self.optionsOk.setEnabled(False)
+    def hide_help(self, signal):
+        self.help.hide()
+        self.options.help.setEnabled(True)
 
     # Help Widget
     def _init_help(self):
