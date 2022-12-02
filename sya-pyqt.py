@@ -16,7 +16,7 @@ import PyQt5.QtGui as qtgui
 def resource_path(relative_path):
     try:
         base_path = sys._MEIPASS
-    except ValueError:
+    except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
@@ -86,7 +86,7 @@ class SyaGuiOptions(qtwidg.QWidget):
             'tracklist': 'Tracklist:',
             'format': 'Format:',
             'quality': 'Quality:',
-            'keep': 'Keep unsplit file',
+            'keep': 'Keep un-split file',
             'output': 'Output:'}
         self.values = {
             'tracklist': init_values.tracklist,
@@ -105,6 +105,7 @@ class SyaGuiOptions(qtwidg.QWidget):
         self._init_spacer()
         self.keep = self._init_keep()
         self.output = self._init_output()
+        self.exit = self._init_exit()
         self.help = self._init_help()
         self.ok = self._init_ok()
         self.setLayout(self._layout)
@@ -112,7 +113,6 @@ class SyaGuiOptions(qtwidg.QWidget):
         self.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.setWindowTitle('sya (split youtube audio)')
         self.setFixedSize(int(self.width() / 1.5), self.minimumHeight())
-        self.show()
 
     def _init_tracklist(self):
         label = self.labels['tracklist']
@@ -157,9 +157,14 @@ class SyaGuiOptions(qtwidg.QWidget):
         self._layout.addLayout(layout, 3, 1, 1, 3)
         return line_edit
 
+    def _init_exit(self):
+        btn = qtwidg.QPushButton('Exit')
+        self._layout.addWidget(btn, 4, 0)
+        return btn
+
     def _init_help(self):
         btn = qtwidg.QPushButton('Help')
-        self._layout.addWidget(btn, 4, 0)
+        self._layout.addWidget(btn, 4, 1)
         return btn
 
     def _init_ok(self):
@@ -270,48 +275,51 @@ class SyaGuiLogger(qtwidg.QWidget):
         self._layout.addWidget(btn, 2, 4)
         return btn
 
+    def hide(self):
+        self.textbox.clear()
+        super().hide()
+
     def log(self, message):
         self.textbox.moveCursor(qtgui.QTextCursor.End)
         self.textbox.textCursor().insertText(message)
         self.textbox.ensureCursorVisible()
-
-    def hide(self):
-        self.textbox.clear()
-        super().hide()
 
 
 class SyaGui(qtwidg.QMainWindow):
     def __init__(self, fn_sya, fn_sya_args):
         super().__init__()
 
-        # sya runtime
         self.fnSya = fn_sya
         self.fnSyaArgs = fn_sya_args
-
         self.main_t = SyaGuiThread(self.fnSya, self.fnSyaArgs)
         self.running = 0
 
-        # gui elements
         self.options = SyaGuiOptions(self.fnSyaArgs)
         self.help = SyaGuiHelp(self.options)
         self.logger = SyaGuiLogger()
+        self._init_hooks()
 
-        # gui hooks
+        self.options.show()
+
+    def _init_hooks(self):
         self.options.closeEvent = self.quit
+        self.options.exit.clicked.connect(self.options.close)
         self.options.help.clicked.connect(self.help.show)
         self.options.ok.clicked.connect(self.main)
 
         self.help.closeEvent = self.help.hide
 
         self.logger.cancel.clicked.connect(self.cancel)
-        self.logger.done.clicked.connect(self.done)
+        self.logger.done.clicked.connect(self.finish)
         sys.stdout = SyaGuiLogStream(txt=self.logger.log)
 
-    # runtime Methods
     def quit(self, event):
         sys.stdout = sys.__stdout__
         while self.running > 0:
             self.cancel()
+        self.options.close()
+        self.logger.close()
+        self.help.close()
         self.close()
 
     def cancel(self):
@@ -321,13 +329,12 @@ class SyaGui(qtwidg.QMainWindow):
             self.running -= 1
         self.logger.hide()
 
-    def done(self):
+    def finish(self):
         self.options.set_tracklist('')
         self.options.set_output('')
         self.options.ok.setEnabled(True)
         self.logger.hide()
 
-    # main runtime functions that call 'sya.py'
     def pre_main(self):
         x = self.options.x() + self.options.width() + 50
         y = self.options.y() - self.options.height()
