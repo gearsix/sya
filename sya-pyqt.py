@@ -213,6 +213,27 @@ class SyaGuiOptions(qtwidg.QWidget):
         self.ok.setEnabled(os.path.exists(self.values['tracklist']) and len(self.values['output']) > 0)
 
 
+class SyaGuiHelp(qtwidg.QTextEdit):
+    def __init__(self, options):
+        super().__init__()
+        self.options = options
+        self.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
+        self.setWindowTitle('sya help')
+        with open(resource_path("HELP.md")) as f:
+            self.setMarkdown(f.read())
+        self.resize(500, 500)
+        self.setReadOnly(True)
+
+    def show(self):
+        self.move(self.options.x() - self.options.width() - 100, self.options.y() - self.options.height())
+        super().show()
+        self.options.help.setEnabled(False)
+
+    def hide(self, signal):
+        super().hide()
+        self.options.help.setEnabled(True)
+
+
 class SyaGui(qtwidg.QMainWindow):
     def __init__(self, fn_sya, fn_sya_args):
         super().__init__()
@@ -220,19 +241,19 @@ class SyaGui(qtwidg.QMainWindow):
         self.fnSya = fn_sya
         self.fnSyaArgs = fn_sya_args
 
-        self._init_help()
-        self._init_logger()
-
         self.options = SyaGuiOptions(self.fnSyaArgs)
-        self.options.closeEvent = self.quit
-        self.options.help.clicked.connect(self.show_help)
-        self.options.ok.clicked.connect(self.main)
+        self.help = SyaGuiHelp(self.options)
 
-        self.help.closeEvent = self.hide_help
+        self.options.closeEvent = self.quit
+        self.options.help.clicked.connect(self.help.show)
+        self.options.ok.clicked.connect(self.main)
+        self.help.closeEvent = self.help.hide
+
+        self._init_logger()
         self.loggerCancel.clicked.connect(self.cancel)
         self.loggerDone.clicked.connect(self.done)
 
-        sys.stdout = SyaGuiLogStream(self.log)
+        sys.stdout = SyaGuiLogStream(txt=self.log)
         self.running = 0
 
     # runtime Methods
@@ -290,28 +311,6 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.show()
         self.running += 1
         self.main_t.start()
-
-    def show_help(self):
-        x = self.options.x() - self.options.width() - 100
-        y = self.options.y() - self.options.height()
-        self.help.move(x, y)
-        self.help.show()
-        self.options.help.setEnabled(False)
-
-    def hide_help(self, signal):
-        self.help.hide()
-        self.options.help.setEnabled(True)
-
-    # Help Widget
-    def _init_help(self):
-        self.help = qtwidg.QTextEdit()
-        self.help.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        self.help.setWindowTitle('sya help')
-        with open(resource_path("HELP.md")) as f:
-            self.help.setMarkdown(f.read())
-        self.help.resize(500, 500)
-        self.help.setReadOnly(True)
-        return
 
     # Logger Widget
     def _init_logger(self):
