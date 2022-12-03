@@ -18,6 +18,7 @@ class TracklistItem:
         self.timestamp = timestamp
         self.title = title
 
+
 # utilities
 def error_exit(msg):
     print('exit failure "{}"'.format(msg))
