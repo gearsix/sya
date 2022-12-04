@@ -3,8 +3,7 @@
 # std
 import os
 import sys
-import subprocess
-import shutil
+import tempfile
 # sya
 import sya
 # pip
@@ -96,7 +95,10 @@ class SyaGuiOptions(qtwidg.QWidget):
             'keep': 'Keep un-split file',
             'output': 'Output:' }
 
-        url, tracklist = sya.load_tracklist(init_values.tracklist) if os.path.exists(init_values.tracklist) else '', ''
+        url = ''
+        tracklist = ''
+        if os.path.exists(init_values.tracklist):
+            url, tracklist = sya.load_tracklist(init_values.tracklist)
         self.values = {
             'url': url,
             'tracklist': '\n'.join(tracklist),
@@ -134,11 +136,12 @@ class SyaGuiOptions(qtwidg.QWidget):
 
     def _init_tracklist(self):
         label = self.labels['tracklist']
-        self._layout.addWidget(qtwidg.QLabel(label, self), 1, 0)
-        layout, line_edit = new_filepicker(self, self.select_tracklist, self.set_tracklist, self.values['tracklist'],
-                                           'file')
-        self._layout.addLayout(layout, 1, 1, 1, 3)
-        return line_edit
+        self._layout.addWidget(qtwidg.QLabel(label, self), 1, 0, qtcore.Qt.AlignmentFlag.AlignTop)
+        text_edit = qtwidg.QPlainTextEdit(self)
+        text_edit.setPlainText(self.values['tracklist'])
+        text_edit.textChanged.connect(self.set_tracklist)
+        self._layout.addWidget(text_edit, 1, 1, 1, 3)
+        return text_edit
 
     def _init_format(self):
         label = self.labels['format']
@@ -195,19 +198,9 @@ class SyaGuiOptions(qtwidg.QWidget):
         self.values['url'] = text
         self.url.setText(text)
         self.update_ok()
-    
-    def select_tracklist(self):
-        dialog = qtwidg.QFileDialog()
-        dialog.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
-        file = dialog.getOpenFileName(self, 'Select a tracklist', os.path.expanduser('~'), "Text file (*.txt)", None,
-                                      qtwidg.QFileDialog.DontUseNativeDialog)
-        if len(file) > 0:
-            self.set_tracklist(file[0])
 
-    def set_tracklist(self, text):
-        self.values['tracklist'] = text
-        self.tracklist.setText(text)
-        self.set_output(os.path.splitext(text)[0])
+    def set_tracklist(self):
+        self.values['tracklist'] = self.tracklist.toPlainText()
         self.update_ok()
 
     def select_output(self):
@@ -238,7 +231,7 @@ class SyaGuiOptions(qtwidg.QWidget):
         self.update_ok()
 
     def update_ok(self):
-        self.ok.setEnabled(len(self.values['url']) > 0 and os.path.exists(self.values['tracklist']) and
+        self.ok.setEnabled(len(self.values['url']) > 0 and len(self.values['tracklist']) > 0 and
                            len(self.values['output']) > 0)
 
 
@@ -309,6 +302,15 @@ class SyaGuiLogger(qtwidg.QWidget):
         self.textbox.ensureCursorVisible()
 
 
+def generate_tracklist(url, tracklist):
+    fd, fpath = tempfile.mkstemp()
+    with open(fd, 'w') as f:
+        f.write(url)
+        f.write('\n')
+        f.writelines(tracklist)
+    return fpath
+
+
 class SyaGui(qtwidg.QMainWindow):
     def __init__(self, fn_sya, fn_sya_args):
         super().__init__()
@@ -354,7 +356,8 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.hide()
 
     def finish(self):
-        self.options.set_tracklist('')
+        self.options.tracklist.clear()
+        self.options.set_tracklist()
         self.options.set_output('')
         self.options.ok.setEnabled(True)
         self.logger.hide()
@@ -371,7 +374,7 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.done.setEnabled(True)
 
     def main(self):
-        self.fnSyaArgs.tracklist = self.options.values['tracklist']
+        self.fnSyaArgs.tracklist = generate_tracklist(self.options.values['url'], self.options.values['tracklist'])
         self.fnSyaArgs.format = self.options.values['format']
         self.fnSyaArgs.quality = self.options.values['quality']
         self.fnSyaArgs.keep = self.options.values['keep']
@@ -383,7 +386,6 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.show()
         self.running += 1
         self.main_t.start()
-
 
 if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
