@@ -114,7 +114,7 @@ To run *sya-pyqt*, you don't need to build a binary everytime, you can just run 
 
 **POSIX (Linux, MacOS, BSD)**
 
-	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\HELP.md;." --add-data "./folder.png:." --add-data "./file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
+	pyinstaller ./sya-pyqt.py -F --windowed --add-data "./HELP.md:." --add-data "./folder.png:." --add-data "./file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
 
 **Windows**
 
