@@ -64,6 +64,15 @@ def new_filepicker(parent, fn_select, fn_update, default_value='', icon=''):
     return layout, lineedit
 
 
+def generate_tracklist(url, tracklist):
+    fd, fpath = tempfile.mkstemp()
+    with open(fd, 'w') as f:
+        f.write(url)
+        f.write('\n')
+        f.writelines(tracklist)
+    return fpath
+
+
 class SyaGuiThread(qtcore.QThread):
     def __init__(self, fn, fn_args=None):
         super().__init__()
@@ -196,7 +205,6 @@ class SyaGuiOptions(qtwidg.QWidget):
     # callbacks
     def set_url(self, text):
         self.values['url'] = text
-        self.url.setText(text)
         self.update_ok()
 
     def set_tracklist(self):
@@ -213,7 +221,6 @@ class SyaGuiOptions(qtwidg.QWidget):
 
     def set_output(self, text):
         self.values['output'] = text
-        self.output.setText(text)
         self.update_ok()
 
     def set_format(self, option):
@@ -302,15 +309,6 @@ class SyaGuiLogger(qtwidg.QWidget):
         self.textbox.ensureCursorVisible()
 
 
-def generate_tracklist(url, tracklist):
-    fd, fpath = tempfile.mkstemp()
-    with open(fd, 'w') as f:
-        f.write(url)
-        f.write('\n')
-        f.writelines(tracklist)
-    return fpath
-
-
 class SyaGui(qtwidg.QMainWindow):
     def __init__(self, fn_sya, fn_sya_args):
         super().__init__()
@@ -386,6 +384,7 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.show()
         self.running += 1
         self.main_t.start()
+
 
 if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
