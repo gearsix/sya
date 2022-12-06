@@ -351,6 +351,7 @@ class SyaGui(qtwidg.QMainWindow):
             self.main_t.terminate()
             self.main_t.wait()
             self.running -= 1
+        self.options.ok.setEnabled(True)
         self.logger.hide()
 
     def finish(self):
