@@ -95,6 +95,14 @@ class SyaGuiLogStream(qtcore.QObject):
 
 class SyaGuiOptions(qtwidg.QWidget):
     def __init__(self, init_values):
+        url = ''
+        tracklist = ''
+        output = ''
+        if os.path.exists(init_values.tracklist):
+            url, tracklist = sya.load_tracklist(init_values.tracklist)
+        if init_values.output == '' and init_values.tracklist != '':
+            output = os.path.join(os.getcwd(), os.path.splitext(os.path.basename(init_values.tracklist))[0])
+
         super().__init__()
         self.labels = {
             'url': 'URL:',
@@ -103,18 +111,13 @@ class SyaGuiOptions(qtwidg.QWidget):
             'quality': 'Quality:',
             'keep': 'Keep un-split file',
             'output': 'Output:' }
-
-        url = ''
-        tracklist = ''
-        if os.path.exists(init_values.tracklist):
-            url, tracklist = sya.load_tracklist(init_values.tracklist)
         self.values = {
             'url': url,
             'tracklist': '\n'.join(tracklist),
             'format': init_values.format,
             'quality': init_values.quality,
             'keep': init_values.keep,
-            'output': init_values.output }
+            'output': output }
 
         self.availableFormats = ['mp3', 'wav', 'ogg', 'aac']
         self.availableQualities = ['0 (better)', '1', '2', '3', '4', '5', '6', '7', '8', '9 (worse)']
