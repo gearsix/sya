@@ -1,4 +1,1 @@
-- QSpacerItem should be dynamic, not static size
 - Add all SyaGui elements under single layout
-- set output on init if tracklist not None
-- Done not disabled during sya run
