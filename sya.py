@@ -11,7 +11,7 @@ Version = 'v1.0.1'
 
 UnsafeFilenameChars = re.compile('[/\\?%*:|\"<>\x7F\x00-\x1F]')
 TrackNum = re.compile('(?:\d+.? ?-? ?)')
-Timestamp = re.compile('(?:[\t ]+?)?[\[\(]+?((\d+[:.])+(\d+))[\]\)]?(?:[\t ]+)?')
+Timestamp = re.compile('(?: - )?(?:[\t ]+)?(?:[\[\(]+)?((\d+[:.])+(\d+))(?:[\]\)])?(?:[\t ]+)?(?: - )?')
 
 class TracklistItem:
     def __init__(self, timestamp, title):
