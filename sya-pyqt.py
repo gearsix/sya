@@ -69,7 +69,7 @@ def generate_tracklist(url, tracklist):
     with open(fd, 'w') as f:
         f.write(url)
         f.write('\n')
-        f.writelines(tracklist)
+        f.writelines(t.encode('utf-8').decode('ascii', 'ignore') for t in tracklist)
     return fpath
 
 
@@ -95,6 +95,8 @@ class SyaGuiLogStream(qtcore.QObject):
 
 class SyaGuiOptions(qtwidg.QWidget):
     def __init__(self, init_values):
+        super().__init__()
+
         url = ''
         tracklist = ''
         output = ''
@@ -103,7 +105,6 @@ class SyaGuiOptions(qtwidg.QWidget):
         if init_values.output == '' and init_values.tracklist != '':
             output = os.path.join(os.getcwd(), os.path.splitext(os.path.basename(init_values.tracklist))[0])
 
-        super().__init__()
         self.labels = {
             'url': 'URL:',
             'tracklist': 'Tracklist:',
