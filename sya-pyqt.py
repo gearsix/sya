@@ -225,6 +225,8 @@ class SyaGuiOptions(qtwidg.QWidget):
 
     def set_output(self, text):
         self.values['output'] = text
+        if self.output.text() != self.values['output']:
+            self.output.setText(self.values['output'])
         self.update_ok()
 
     def set_format(self, option):
