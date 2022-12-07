@@ -247,8 +247,10 @@ class SyaGuiOptions(qtwidg.QWidget):
 
 
 class SyaGuiHelp(qtwidg.QTextEdit):
-    def __init__(self, options):
+    def __init__(self, parent, options):
         super().__init__()
+        self.setParent(parent)
+        self.setWindowFlag(qtcore.Qt.WindowType.Dialog)
         self.options = options
         self.setWindowIcon(qtgui.QIcon(resource_path('sya.png')))
         self.setWindowTitle('sya help')
@@ -262,14 +264,15 @@ class SyaGuiHelp(qtwidg.QTextEdit):
         self.options.help.setEnabled(False)
         super().show()
 
-    def hide(self, signal):
+    def hide(self, sig=''):
         self.options.help.setEnabled(True)
-        super().hide()
 
 
 class SyaGuiLogger(qtwidg.QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
+        self.setParent(parent)
+        self.setWindowFlag(qtcore.Qt.WindowType.Dialog)
         self._layout = qtwidg.QGridLayout()
         self.textbox = self._init_textbox()
         self.cancel = self._init_cancel()
@@ -303,7 +306,7 @@ class SyaGuiLogger(qtwidg.QWidget):
         self._layout.addWidget(btn, 2, 4)
         return btn
 
-    def hide(self):
+    def hide(self, sig=''):
         self.textbox.clear()
         super().hide()
 
@@ -313,18 +316,16 @@ class SyaGuiLogger(qtwidg.QWidget):
         self.textbox.ensureCursorVisible()
 
 
-class SyaGui(qtwidg.QMainWindow):
+class SyaGui():
     def __init__(self, fn_sya, fn_sya_args):
-        super().__init__()
-
         self.fnSya = fn_sya
         self.fnSyaArgs = fn_sya_args
         self.main_t = SyaGuiThread(self.fnSya, self.fnSyaArgs)
         self.running = 0
 
         self.options = SyaGuiOptions(self.fnSyaArgs)
-        self.help = SyaGuiHelp(self.options)
-        self.logger = SyaGuiLogger()
+        self.help = SyaGuiHelp(self.options, self.options)
+        self.logger = SyaGuiLogger(self.options)
         self._init_hooks()
 
         self.options.show()
@@ -345,10 +346,9 @@ class SyaGui(qtwidg.QMainWindow):
         sys.stdout = sys.__stdout__
         while self.running > 0:
             self.cancel()
-        self.options.close()
-        self.logger.close()
         self.help.close()
-        self.close()
+        self.logger.close()
+        self.options.close()
 
     def cancel(self):
         if self.running > 0:
@@ -359,9 +359,9 @@ class SyaGui(qtwidg.QMainWindow):
         self.logger.hide()
 
     def finish(self):
-        self.options.tracklist.clear()
-        self.options.set_tracklist()
-        self.options.set_output('')
+        self.options.url.setText('')
+        self.options.tracklist.setPlainText('')
+        self.options.output.setText('')
         self.options.ok.setEnabled(True)
         self.logger.hide()
 
