@@ -100,7 +100,7 @@ To **uninstall**, just remove all files recorded to *./install.txt*.
 
 Some people don't like the cli and I wanted to play with PyQt, so sya-pyqt wraps a nice GUI around the *sya.py* runtime.
 
-![screenshot](screenshot.png "sya-pyqt on Windows)
+![screenshot](screenshot.png "sya-pyqt on Windows")
 
 ### Development
 
