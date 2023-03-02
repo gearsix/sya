@@ -21,5 +21,5 @@ setuptools.setup(
 			'Programming Language :: Python',
 			'Operating System :: OS Independent',
 	],
-        scripts=['sya.py', 'sya-pyqt.py']
+    scripts=['./src/sya.py', './src/sya-pyqt.py']
 )
