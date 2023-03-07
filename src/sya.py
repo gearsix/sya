@@ -134,7 +134,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='download & split audio tracks long youtube videos')
     # arguments
-    parser.add_argument('tracklist', metavar='TRACKLIST', nargs='?',
+    parser.add_argument('tracklist', metavar='TRACKLIST', nargs='*',
         help='tracklist of title and timestamp information to split audio by')
     # options
     parser.add_argument('-o', '--output',
@@ -165,33 +165,34 @@ def sya(args):
 
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
-    if args.tracklist == None or os.path.exists(args.tracklist) == False:
-        error_exit('missing tracklist')
-    if args.output == None:
-        args.output = os.path.splitext(args.tracklist)[0]
 
-    url, tracklist = load_tracklist(args.tracklist)
+    for t in args.tracklist:
+        if args.tracklist == None or os.path.exists(t) == False:
+            error_exit('missing tracklist "{}"'.format(t))
+        url, tracklist = load_tracklist(t)
+
+        output = args.output if args.output != None else os.path.splitext(t)[0]
+        audio_fpath = get_audio(args.youtubedl, url, output,
+                args.format, args.quality, args.keep, args.ffmpeg)
+        if os.path.exists(audio_fpath) == False:
+            error_exit('download failed, aborting')
+
     
-    audio_fpath = get_audio(args.youtubedl, url, args.output,
-            args.format, args.quality, args.keep, args.ffmpeg)
-    if os.path.exists(audio_fpath) == False:
-        error_exit('download failed, aborting')
+        tracks = parse_tracks(tracklist)
+        
+        missing = missing_times(tracks)
+        if len(missing) > 0:
+            error_exit('some tracks are missing timestamps')
 
-    
-    tracks = parse_tracks(tracklist)
-    
-    missing = missing_times(tracks)
-    if len(missing) > 0:
-        error_exit('some tracks are missing timestamps')
+        length = read_tracklen(args.ffmpeg, audio_fpath)
+        os.makedirs(output, exist_ok=True)
+        split_tracks(args.ffmpeg, audio_fpath, length, tracks, args.format, output)
 
-    length = read_tracklen(args.ffmpeg, audio_fpath)
-    os.makedirs(args.output, exist_ok=True)
-    split_tracks(args.ffmpeg, audio_fpath, length, tracks, args.format, args.output)
+        if args.keep is False:
+            os.remove(audio_fpath)
 
-    if args.keep is False:
-        os.remove(audio_fpath)
-
-    print('Success')
+        print('Success')
 
 if __name__ == '__main__':
     sya(parse_args())
+
