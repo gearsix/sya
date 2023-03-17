@@ -379,7 +379,8 @@ class SyaGui():
         self.logger.done.setEnabled(True)
 
     def main(self):
-        self.fnSyaArgs.tracklist = generate_tracklist(self.options.values['url'], self.options.values['tracklist'])
+        tracklist = generate_tracklist(self.options.values['url'], self.options.values['tracklist']) 
+        self.fnSyaArgs.tracklist = [tracklist] # sya expects a list here
         self.fnSyaArgs.format = self.options.values['format']
         self.fnSyaArgs.quality = self.options.values['quality']
         self.fnSyaArgs.keep = self.options.values['keep']
@@ -397,8 +398,10 @@ if __name__ == '__main__':
     app = qtwidg.QApplication(sys.argv)
 
     args = sya.parse_args()
-    if args.tracklist is None:
+    if args.tracklist is None or len(args.tracklist) == 0:
         args.tracklist = ''
+    else:
+        args.tracklist = args.tracklist[0]
     if args.output is None:
         args.output = ''
     if args.youtubedl is None:
