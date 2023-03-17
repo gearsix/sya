@@ -114,30 +114,20 @@ To run *sya-pyqt*, you don't need to build a binary everytime, you can just run 
 
 **POSIX (Linux, MacOS, BSD)**
 
-	pyinstaller ./src/sya-pyqt.py -F --windowed \
-	  --add-data "./doc/HELP.md:." \
-	  --add-data "./res/folder.png:." \
-	  --add-data "./file.png:." \
-	  --add-data "./sya.png:." \
-	  --add-data "$FFMPEG:." \
-	  --add-data "$YT-DLP:."
+	pyinstaller ./src/sya-pyqt.py -F --windowed --add-data "./doc/HELP.md:." --add-data "./res/folder.png:." --add-data "./res/file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
 
 **Windows**
 
-	pyinstaller ./sya-pyqt.py -F --windowed
-	  --add-data ".\HELP.md;." \
-	  --add-data ".\folder.png;." \
-	  --add-data ".\file.png;." \
-	  --add-data ".\sya.png;." \
-	  --add-data "$FFMPEG;." \
-	  --add-data "$YT-DLP;."
+	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\doc\HELP.md;." --add-data ".\res\folder.png;." --add-data ".\res\file.png;." --add-data ".\res\sya.png;." --add-data "$FFMPEG;." --add-data "$YT-DLP;."
 
-- Make sure you have a *yt-dlp* binary available, the filepath of this is referred to as *$YT-DLP*.
-- Make sure you have a *ffmpeg* binary available, the filepath of this is referred to as *$FFMPEG*.
+
+**IMPORTANT NOTES**
+
+- Make sure you have the latest *yt-dlp* binary available, the filepath to this should replace *$YT-DLP*.
+- Make sure you have the latest *ffmpeg* binary available, the filepath of this should replace *$FFMPEG*.
 - In some cases, I've found the path of PyQt5 has had to be explicitly given to *pyinstaller*:
 `--path <site-packages filepath>\PyQt5`
-
-Optionally, you can add an icon to the binary, I'd recommend installing [Pillow](https://python-pillow.org/) so you don't need to manually convert `sya.png` to an icon file. Just add `--icon "sya.png"` to the build command.
+- You might want to add an icon to the binary, to do this install [Pillow](https://python-pillow.org/) and add `--icon "sya.png"` to the build command.
 
 
 ---
