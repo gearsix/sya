@@ -165,6 +165,8 @@ def sya(args):
 
     if check_bin(args.youtubedl, args.ffmpeg) == False:
         error_exit('required binaries are missing')
+    if args.output != None and len(args.output) > 0 and args.output[len(args.output)-1] == os.sep:
+        args.output = args.output[:-1]
 
     for t in args.tracklist:
         if args.tracklist == None or os.path.exists(t) == False:
