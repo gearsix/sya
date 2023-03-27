@@ -34,12 +34,14 @@ def check_bin(*binaries):
             error_exit('failed to execute {}'.format(b))
 
 # functions
-def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg='ffmpeg'):
+def get_audio(youtubedl, url, outdir, format='mp3', quality='320K', keep=True, ffmpeg=''):
     print('Downloading {} ({}, {})...'.format(url, format, quality))
     fname = '{}/{}'.format(outdir, os.path.basename(outdir), format)
     cmd = [youtubedl, '--newline', '--extract-audio', '--audio-format', format,
-        '--audio-quality', quality, '--prefer-ffmpeg', '--ffmpeg-location', ffmpeg,
-        '-o', fname + '.%(ext)s']
+            '--audio-quality', quality, '-o', fname + '.%(ext)s']
+    if ffmpeg != '':
+        cmd.append('--ffmpeg-location')
+        cmd.append(ffmpeg)
     if keep == True:
         cmd.append('-k')
     cmd.append(url)
@@ -174,8 +176,10 @@ def sya(args):
         url, tracklist = load_tracklist(t)
 
         output = args.output if args.output != None else os.path.splitext(t)[0]
-        audio_fpath = get_audio(args.youtubedl, url, output,
-                args.format, args.quality, args.keep, args.ffmpeg)
+        if args.ffmpeg == 'ffmpeg' or args.ffmpeg == 'ffmpeg.exe':
+            audio_fpath = get_audio(args.youtubedl, url, output, args.format, args.quality, args.keep, '')
+        else:
+            audio_fpath = get_audio(args.youtubedl, url, output, args.format, args.quality, args.keep, args.ffmpeg)
         if os.path.exists(audio_fpath) == False:
             error_exit('download failed, aborting')
 
