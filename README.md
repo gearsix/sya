@@ -114,11 +114,15 @@ To run *sya-pyqt*, you don't need to build a binary everytime, you can just run 
 
 **POSIX (Linux, MacOS, BSD)**
 
-	pyinstaller ./src/sya-pyqt.py -F --windowed --add-data "./doc/HELP.md:." --add-data "./res/folder.png:." --add-data "./res/file.png:." --add-data "./sya.png:." --add-data "$FFMPEG:." --add-data "$YT-DLP:."
+	FFMPEG="<filepath to ffmpeg>" \
+	YTDLP="<filepath to yt-dlp>" \
+	pyinstaller ./src/sya-pyqt.py -F --windowed --add-data "./doc/HELP.md:." --add-data "./res/folder.png:." --add-data "./res/file.png:." --add-data "./res/sya.png:." --add-data "$FFMPEG:." --add-data "$YTDLP:."
 
 **Windows**
 
-	pyinstaller ./sya-pyqt.py -F --windowed --add-data ".\doc\HELP.md;." --add-data ".\res\folder.png;." --add-data ".\res\file.png;." --add-data ".\res\sya.png;." --add-data "$FFMPEG;." --add-data "$YT-DLP;."
+	$FFMPEG="<filepath to ffmpeg.exe>"
+	$YT_DLP="<filepath to yt-dlp.exe>"
+	pyinstaller .\src\sya-pyqt.py -F --windowed --add-data ".\doc\HELP.md;." --add-data ".\res\folder.png;." --add-data ".\res\file.png;." --add-data ".\res\sya.png;." --add-data "$FFMPEG;." --add-data "$YT_DLP;."
 
 
 **IMPORTANT NOTES**
